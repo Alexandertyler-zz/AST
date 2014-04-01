@@ -22,6 +22,7 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // This is a project skeleton file
 
 import java.io.PrintStream;
+import java.util.Enumeration;
 
 /** This class may be used to contain the semantic information such as
  * the inheritance graph.  You may use it or not as you like: it is only
@@ -29,6 +30,16 @@ import java.io.PrintStream;
 class ClassTable {
     private int semantErrors;
     private PrintStream errorStream;
+   
+
+    /* Here I define variables for classes so that I can access them 
+     * across other files.
+     */
+    private class_c Object_class;
+    private class_c IO_class;
+    private class_c Int_class;
+    private class_c Bool_class;
+    private class_c Str_class;
 
     /** Creates data structures representing basic Cool classes (Object,
      * IO, Int, Bool, String).  Please note: as is this method does not
@@ -206,7 +217,31 @@ class ClassTable {
 	errorStream = System.err;
 	
 	/* fill this in */
+    
+    	installBasicClasses();
+    	for(Enumeration e = cls.getElements(); e.hasMoreElements();) {
+        	class_c curr_class = ((class_c)e.nextElement());
+        	/*check curr_class types*/
+        	if (check_uninheritable(curr_class)) {
+            	semantError(curr_class).println("class " + curr_class.getName().toString()
+                    + "cannot inherit class " + curr_class.getParent().getString());
+        	}
+     	}
     }
+
+    /*This is used to check the basic uninheritable classes,
+     * int, string, bool
+     */
+    public boolean check_uninheritable(class_c curr_class) {
+        installBasicClasses();
+	AbstractSymbol parent = curr_class.getParent();
+	if (parent.equals(Int_class.getName()) || parent.equals(Str_class.getName())
+                || parent.equals(Bool_class.getName())) {
+            return true;
+	}
+	return false;
+    }
+
 
     /** Prints line number and file name of the given class.
      *
@@ -257,6 +292,8 @@ class ClassTable {
     public static void main(String[] args) {
 	new ClassTable(null).installBasicClasses();
     }
+
 }
 			  
-    
+
+

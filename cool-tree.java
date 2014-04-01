@@ -276,8 +276,20 @@ class programc extends Program {
 	if (classTable.errors()) {
 	    System.err.println("Compilation halted due to static semantic errors.");
 	    System.exit(1);
-	}
+        }
     }
+    
+    /*Here we need to do the actual semant error check.
+     * Not sure if I want to put it in ClassTable or not.
+     * I could have it automatically check when class table is called.
+     *
+     * variables: 
+     *      classTable (Table of all classes made)
+     *            
+     *    
+     */
+
+    
 
 }
 
