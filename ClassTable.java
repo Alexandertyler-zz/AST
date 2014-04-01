@@ -22,6 +22,7 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // This is a project skeleton file
 
 import java.io.PrintStream;
+import java.util.Enumeration;
 
 /** This class may be used to contain the semantic information such as
  * the inheritance graph.  You may use it or not as you like: it is only
@@ -29,11 +30,6 @@ import java.io.PrintStream;
 class ClassTable {
     private int semantErrors;
     private PrintStream errorStream;
-
-
-
-    
-
 
 
     /** Creates data structures representing basic Cool classes (Object,
@@ -212,8 +208,18 @@ class ClassTable {
 	errorStream = System.err;
 	
 	/* fill this in */
-
     
+    installBasicClasses();
+    for(Enumerate e = cls.getElements(); e.hasMoreElements();) {
+        class_c curr_class = ((class_c)e.nextElement());
+        /*check curr_class types*/
+        if (curr_Class.check_uninheritable()) {
+            semantError(curr_class).println("class " + curr_class.getName().getString() +
+                    + "cannot inherit class " + curr_class.getParent().getString());
+        }
+        
+
+     }
 
 
 

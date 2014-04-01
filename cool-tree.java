@@ -273,14 +273,22 @@ class programc extends Program {
 	
 	/* some semantic analysis code may go here */
 
-
-
-
 	if (classTable.errors()) {
 	    System.err.println("Compilation halted due to static semantic errors.");
 	    System.exit(1);
-	}
     }
+    
+    /*Here we need to do the actual semant error check.
+     * Not sure if I want to put it in ClassTable or not.
+     * I could have it automatically check when class table is called.
+     *
+     * variables: 
+     *      classTable (Table of all classes made)
+     *            
+     *    
+     */
+
+    
 
 }
 
@@ -338,6 +346,14 @@ class class_c extends Class_ {
     public AbstractSymbol getFilename() { return filename; }
     public Features getFeatures()       { return features; }
 
+    /*This is used to check the basic uninheritable classes,
+     * int, string, bool
+     */
+    public boolean check_uninheritable() {
+        if parent.equals(Int_class.get_name()) || parent.equals(Str_class.getName() 
+                || parent.equals(Bool_class.getName() {
+            return true;
+        }
 }
 
 
