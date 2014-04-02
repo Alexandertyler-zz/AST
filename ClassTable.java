@@ -41,6 +41,12 @@ class ClassTable {
     private class_c Bool_class;
     private class_c Str_class;
 
+
+
+    
+
+
+
     /** Creates data structures representing basic Cool classes (Object,
      * IO, Int, Bool, String).  Please note: as is this method does not
      * do anything useful; you will need to edit it to make if do what
@@ -216,8 +222,7 @@ class ClassTable {
 	semantErrors = 0;
 	errorStream = System.err;
 	
-	/* fill this in */
-    
+	/* fill this in */    
     	installBasicClasses();
     	for(Enumeration e = cls.getElements(); e.hasMoreElements();) {
         	class_c curr_class = ((class_c)e.nextElement());
