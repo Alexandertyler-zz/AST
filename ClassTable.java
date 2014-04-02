@@ -23,6 +23,7 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 import java.io.PrintStream;
 import java.util.Enumeration;
+import java.util.Hashtable;
 
 /** This class may be used to contain the semantic information such as
  * the inheritance graph.  You may use it or not as you like: it is only
@@ -41,7 +42,8 @@ class ClassTable {
     private class_c Bool_class;
     private class_c Str_class;
 
-
+    /*Classwide variables for our hashtable. */
+    private Hashtable<AbstractSymbol, class_c> 
 
     
 
