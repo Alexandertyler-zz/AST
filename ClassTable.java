@@ -23,6 +23,10 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 import java.io.PrintStream;
 import java.util.Enumeration;
+<<<<<<< HEAD
+=======
+import java.util.Hashtable;
+>>>>>>> 8c5acc27c2011410f7868a5ef56ce51f3e35ec90
 
 /** This class may be used to contain the semantic information such as
  * the inheritance graph.  You may use it or not as you like: it is only
@@ -30,8 +34,27 @@ import java.util.Enumeration;
 class ClassTable {
     private int semantErrors;
     private PrintStream errorStream;
+   
+
+    /* Here I define variables for classes so that I can access them 
+     * across other files.
+     */
+    private class_c Object_class;
+    private class_c IO_class;
+    private class_c Int_class;
+    private class_c Bool_class;
+    private class_c Str_class;
+
+<<<<<<< HEAD
+=======
+    /*Classwide variables for our hashtable. */
+    private Hashtable<class_c, class_c[]> parentChildTable;
+
+    
 
 
+
+>>>>>>> 8c5acc27c2011410f7868a5ef56ce51f3e35ec90
     /** Creates data structures representing basic Cool classes (Object,
      * IO, Int, Bool, String).  Please note: as is this method does not
      * do anything useful; you will need to edit it to make if do what
@@ -204,27 +227,52 @@ class ClassTable {
 
 
     public ClassTable(Classes cls) {
-	semantErrors = 0;
-	errorStream = System.err;
-	
-	/* fill this in */
-    
-    installBasicClasses();
-    for(Enumerate e = cls.getElements(); e.hasMoreElements();) {
-        class_c curr_class = ((class_c)e.nextElement());
-        /*check curr_class types*/
-        if (curr_Class.check_uninheritable()) {
-            semantError(curr_class).println("class " + curr_class.getName().getString() +
-                    + "cannot inherit class " + curr_class.getParent().getString());
-        }
-        
 
-     }
+		semantErrors = 0;
+		errorStream = System.err;
+
+		parentChildTable = new Hashtable<class_c, class_c[]>();
+
+		/* fill this in */    
+    	installBasicClasses();
+    	for(Enumeration e = cls.getElements(); e.hasMoreElements();) {
+        	class_c curr_class = ((class_c)e.nextElement());
+        	class_c parent = ((class_c)curr_class.getParent());
+        	/*Add class parent to hashtable and child to list. */
+        	if (parent!=null) {
+        		if (parentChildTable.containsKey(parent)) {
+        			parentChildTable.get(parent).add(curr_class);
+        		} else {
+        			class_c[] child_nodes = new class_c[curr_class];
+        			parentChildTable.put(parent, child_nodes);
+        		}        		
+        	} else {
+        		//error!!!!
+        	}
 
 
 
 
+        	/*check curr_class types*/
+        	if (check_uninheritable(curr_class)) {
+            	semantError(curr_class).println("class " + curr_class.getName().toString()
+                	+ "cannot inherit class " + curr_class.getParent().getString());
+        	}
+     	}
     }
+
+    /*This is used to check the basic uninheritable classes,
+     * int, string, bool
+     */
+    public boolean check_uninheritable(class_c curr_class) {
+	AbstractSymbol parent = curr_class.getParent();
+	if (parent.equals(Int_class.getName()) || parent.equals(Str_class.getName())
+                || parent.equals(Bool_class.getName())) {
+            return true;
+	}
+	return false;
+    }
+
 
     /** Prints line number and file name of the given class.
      *

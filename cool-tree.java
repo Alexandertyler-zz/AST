@@ -276,6 +276,10 @@ class programc extends Program {
 	if (classTable.errors()) {
 	    System.err.println("Compilation halted due to static semantic errors.");
 	    System.exit(1);
+<<<<<<< HEAD
+=======
+        }
+>>>>>>> 8c5acc27c2011410f7868a5ef56ce51f3e35ec90
     }
     
     /*Here we need to do the actual semant error check.
