@@ -24,7 +24,7 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Hashtable;
-
+import java.util.ArrayList;
 
 /** This class may be used to contain the semantic information such as
  * the inheritance graph.  You may use it or not as you like: it is only
@@ -44,8 +44,8 @@ class ClassTable {
     private class_c Str_class;
 
     /*Classwide variables for our hashtable. */
-    private Hashtable<class_c, class_c[]> parentChildTable;
-
+    private Hashtable<AbstractSymbol, ArrayList<class_c>> parentChildTable;
+    private Hashtable<AbstractSymbol, class_c> class_cTable;
     
 
 
@@ -212,6 +212,15 @@ class ClassTable {
 
 	// NOT TO BE INCLUDED IN SKELETON
 	
+	/*This adds our basic class types to the class_c lookup table
+	*/	
+
+	class_cTable.put(Object_class.getName(), Object_class);
+	class_cTable.put(IO_class.getName(), IO_class);
+	class_cTable.put(Int_class.getName(), Int_class);
+	class_cTable.put(Bool_class.getName(), Bool_class);
+	class_cTable.put(Str_class.getName(), Str_class);
+
 	Object_class.dump_with_types(System.err, 0);
 	IO_class.dump_with_types(System.err, 0);
 	Int_class.dump_with_types(System.err, 0);
@@ -226,7 +235,8 @@ class ClassTable {
 		semantErrors = 0;
 		errorStream = System.err;
 
-		parentChildTable = new Hashtable<class_c, class_c[]>();
+		parentChildTable = new Hashtable<AbstractSymbol, ArrayList<class_c>>();
+		class_cTable = new Hashtable<AbstractSymbol, class_c>();
 
         /* Our Variables:
          *      curr_class 
@@ -237,14 +247,21 @@ class ClassTable {
 
     	installBasicClasses();
     	for(Enumeration e = cls.getElements(); e.hasMoreElements();) {
-        	class_c curr_class = ((class_c)e.nextElement());
-        	class_c parent = ((class_c)curr_class.getParent());
+
+        	class_c curr_class = (class_c)e.nextElement();
+		class_cTable.put(curr_class.getName(), curr_class);
+
+        	AbstractSymbol parent = curr_class.getParent();
+		
         	/*Add class parent to hashtable and child to list. */
         	if (parent!=null) {
         		if (parentChildTable.containsKey(parent)) {
         			parentChildTable.get(parent).add(curr_class);
+				//child_nodes.add(curr_class);
+				//parentChildTable.put(parent, child_nodes);	
         		} else {
-        			class_c[] child_nodes = new class_c[curr_class];
+        			ArrayList<class_c> child_nodes = new ArrayList<class_c>();
+				child_nodes.add(curr_class);
         			parentChildTable.put(parent, child_nodes);
         		}        		
         	} else {

@@ -276,10 +276,7 @@ class programc extends Program {
 	if (classTable.errors()) {
 	    System.err.println("Compilation halted due to static semantic errors.");
 	    System.exit(1);
-<<<<<<< HEAD
-=======
         }
->>>>>>> 8c5acc27c2011410f7868a5ef56ce51f3e35ec90
     }
     
     /*Here we need to do the actual semant error check.
@@ -350,14 +347,7 @@ class class_c extends Class_ {
     public AbstractSymbol getFilename() { return filename; }
     public Features getFeatures()       { return features; }
 
-    /*This is used to check the basic uninheritable classes,
-     * int, string, bool
-     */
-    public boolean check_uninheritable() {
-        if parent.equals(Int_class.get_name()) || parent.equals(Str_class.getName() 
-                || parent.equals(Bool_class.getName() {
-            return true;
-        }
+    
 }
 
 
