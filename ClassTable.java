@@ -43,7 +43,7 @@ class ClassTable {
     private class_c Str_class;
 
     /*Classwide variables for our hashtable. */
-    private Hashtable<AbstractSymbol, class_c> 
+    private Hashtable<class_c, class_c[]> parentChildTable;
 
     
 
@@ -221,17 +221,35 @@ class ClassTable {
 
 
     public ClassTable(Classes cls) {
-	semantErrors = 0;
-	errorStream = System.err;
-	
-	/* fill this in */    
+		semantErrors = 0;
+		errorStream = System.err;
+
+		parentChildTable = new Hashtable<class_c, class_c[]>();
+
+		/* fill this in */    
     	installBasicClasses();
     	for(Enumeration e = cls.getElements(); e.hasMoreElements();) {
         	class_c curr_class = ((class_c)e.nextElement());
+        	class_c parent = ((class_c)curr_class.getParent());
+        	/*Add class parent to hashtable and child to list. */
+        	if (parent!=null) {
+        		if (parentChildTable.containsKey(parent)) {
+        			parentChildTable.get(parent).add(curr_class);
+        		} else {
+        			class_c[] child_nodes = new class_c[curr_class];
+        			parentChildTable.put(parent, child_nodes);
+        		}        		
+        	} else {
+        		//error!!!!
+        	}
+
+
+
+
         	/*check curr_class types*/
         	if (check_uninheritable(curr_class)) {
             	semantError(curr_class).println("class " + curr_class.getName().toString()
-                    + "cannot inherit class " + curr_class.getParent().getString());
+                	+ "cannot inherit class " + curr_class.getParent().getString());
         	}
      	}
     }
