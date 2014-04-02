@@ -238,7 +238,6 @@ class ClassTable {
      * int, string, bool
      */
     public boolean check_uninheritable(class_c curr_class) {
-        installBasicClasses();
 	AbstractSymbol parent = curr_class.getParent();
 	if (parent.equals(Int_class.getName()) || parent.equals(Str_class.getName())
                 || parent.equals(Bool_class.getName())) {
