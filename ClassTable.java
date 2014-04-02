@@ -23,10 +23,8 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 import java.io.PrintStream;
 import java.util.Enumeration;
-<<<<<<< HEAD
-=======
 import java.util.Hashtable;
->>>>>>> 8c5acc27c2011410f7868a5ef56ce51f3e35ec90
+
 
 /** This class may be used to contain the semantic information such as
  * the inheritance graph.  You may use it or not as you like: it is only
@@ -45,8 +43,6 @@ class ClassTable {
     private class_c Bool_class;
     private class_c Str_class;
 
-<<<<<<< HEAD
-=======
     /*Classwide variables for our hashtable. */
     private Hashtable<class_c, class_c[]> parentChildTable;
 
@@ -54,7 +50,6 @@ class ClassTable {
 
 
 
->>>>>>> 8c5acc27c2011410f7868a5ef56ce51f3e35ec90
     /** Creates data structures representing basic Cool classes (Object,
      * IO, Int, Bool, String).  Please note: as is this method does not
      * do anything useful; you will need to edit it to make if do what
