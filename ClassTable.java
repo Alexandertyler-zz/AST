@@ -228,7 +228,13 @@ class ClassTable {
 
 		parentChildTable = new Hashtable<class_c, class_c[]>();
 
-		/* fill this in */    
+        /* Our Variables:
+         *      curr_class 
+         *      parent
+         *      parentChildTable
+         *      child_nodes
+         */
+
     	installBasicClasses();
     	for(Enumeration e = cls.getElements(); e.hasMoreElements();) {
         	class_c curr_class = ((class_c)e.nextElement());
