@@ -302,6 +302,7 @@ class class_c extends Class_ {
     protected AbstractSymbol parent;
     protected Features features;
     protected AbstractSymbol filename;
+    private boolean visited;
     /** Creates "class_c" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
@@ -316,6 +317,7 @@ class class_c extends Class_ {
         parent = a2;
         features = a3;
         filename = a4;
+        visited = false;
     }
     public TreeNode copy() {
         return new class_c(lineNumber, copy_AbstractSymbol(name), copy_AbstractSymbol(parent), (Features)features.copy(), copy_AbstractSymbol(filename));
@@ -347,7 +349,11 @@ class class_c extends Class_ {
     public AbstractSymbol getFilename() { return filename; }
     public Features getFeatures()       { return features; }
 
-    
+    //This is where I defined the functions for checking booleans for cycles
+    public boolean checkVisit()		{ return visited; }
+    public void visit()			{ visited = true; }
+    public void resetVisit()		{ visited = false; }    
+
 }
 
 

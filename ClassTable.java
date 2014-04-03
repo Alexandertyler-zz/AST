@@ -248,47 +248,76 @@ class ClassTable {
     	installBasicClasses();
     	for(Enumeration e = cls.getElements(); e.hasMoreElements();) {
 
-        	class_c curr_class = (class_c)e.nextElement();
-		class_cTable.put(curr_class.getName(), curr_class);
+            class_c curr_class = (class_c)e.nextElement();
+	    class_cTable.put(curr_class.getName(), curr_class);
 
-        	AbstractSymbol parent = curr_class.getParent();
+            AbstractSymbol parent = curr_class.getParent();
 		
-        	/*Add class parent to hashtable and child to list. */
-        	if (parent!=null) {
-        		if (parentChildTable.containsKey(parent)) {
-        			parentChildTable.get(parent).add(curr_class);
-				//child_nodes.add(curr_class);
-				//parentChildTable.put(parent, child_nodes);	
-        		} else {
-        			ArrayList<class_c> child_nodes = new ArrayList<class_c>();
-				child_nodes.add(curr_class);
-        			parentChildTable.put(parent, child_nodes);
-        		}        		
+            /*Add class parent to hashtable and child to list. */
+            if (parent!=null) {
+        	if (parentChildTable.containsKey(parent)) {
+                    parentChildTable.get(parent).add(curr_class);	
         	} else {
-        		//error!!!!
-        	}
+        	    ArrayList<class_c> child_nodes = new ArrayList<class_c>();
+		    child_nodes.add(curr_class);
+        	    parentChildTable.put(parent, child_nodes);
+        	}        		
+            }else {
+                //Not an error but needs to be noted.
+		semantError().println("No Parent found.");	
+            }
+
+		
 
 
-
-
-        	/*check curr_class types*/
-        	if (check_uninheritable(curr_class)) {
+            /*check curr_class types*/
+            if (check_uninheritable(curr_class)) {
             	semantError(curr_class).println("class " + curr_class.getName().toString()
                 	+ "cannot inherit class " + curr_class.getParent().getString());
-        	}
-     	}
+            }
+
+	}
+	/*At this point, all of our classes and parents should be stored.
+	 * We need to check for cycles and other misc things
+	 * such as a main class.
+	 */
+	//checkForCycles(class_cTable, parentChildTable);
+	for (Enumeration e = class_cTable.elements(); e.hasMoreElements(); ) {
+	    class_c curr_class = e.nextElement();
+	    visitNode(curr_class);
+	}	
+
+	if (!class_cTable.contains(main.getName()) {
+	    semantError().println("No main class found.");
+	}	
+	
+
     }
+
+    public boolean visitNode(class_c curr_class) {
+	if (!curr_class.visited()) {
+	    curr_class.visit();
+	    if (parentChildTable.contains(curr_class.getName()) {
+		ArrayList<class_c> children = parentChildTable.get(curr_class.getName());
+                //for element in children visitNode(element);
+	    } else {
+	        return false;
+	} else {
+	    return true;
+	}
+    }
+
 
     /*This is used to check the basic uninheritable classes,
      * int, string, bool
      */
     public boolean check_uninheritable(class_c curr_class) {
-	AbstractSymbol parent = curr_class.getParent();
-	if (parent.equals(Int_class.getName()) || parent.equals(Str_class.getName())
+        AbstractSymbol parent = curr_class.getParent();
+        if (parent.equals(Int_class.getName()) || parent.equals(Str_class.getName())
                 || parent.equals(Bool_class.getName())) {
             return true;
 	}
-	return false;
+	    return false;
     }
 
 
