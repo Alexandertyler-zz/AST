@@ -283,25 +283,28 @@ class ClassTable {
 	 */
 	//checkForCycles(class_cTable, parentChildTable);
 	for (Enumeration e = class_cTable.elements(); e.hasMoreElements(); ) {
-	    class_c curr_class = e.nextElement();
+	    class_c curr_class = (class_c) e.nextElement();
 	    visitNode(curr_class);
 	}	
-
-	if (!class_cTable.contains(main.getName()) {
+	/*
+	if (!class_cTable.contains(main.getName())) {
 	    semantError().println("No main class found.");
-	}	
+	} */	
 	
 
     }
 
     public boolean visitNode(class_c curr_class) {
-	if (!curr_class.visited()) {
+	if (!curr_class.checkVisit()) {
 	    curr_class.visit();
-	    if (parentChildTable.contains(curr_class.getName()) {
+	    if (parentChildTable.contains(curr_class.getName())) {
 		ArrayList<class_c> children = parentChildTable.get(curr_class.getName());
                 //for element in children visitNode(element);
+		//placeholder for bugtesting
+		return false;
 	    } else {
 	        return false;
+	    }
 	} else {
 	    return true;
 	}
