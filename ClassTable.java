@@ -32,7 +32,7 @@ import java.util.ArrayList;
 class ClassTable {
     private int semantErrors;
     private PrintStream errorStream;
-   
+    private boolean firstRecurse;
 
     /* Here I define variables for classes so that I can access them 
      * across other files.
@@ -284,7 +284,9 @@ class ClassTable {
 	//checkForCycles(class_cTable, parentChildTable);
 	for (Enumeration e = class_cTable.elements(); e.hasMoreElements(); ) {
 	    class_c curr_class = (class_c) e.nextElement();
+	    firstRecurse = true;
 	    visitNode(curr_class);
+	    
 	}	
 	/*
 	if (!class_cTable.contains(main.getName())) {
@@ -294,20 +296,23 @@ class ClassTable {
 
     }
 
-    public boolean visitNode(class_c curr_class) {
-	if (!curr_class.checkVisit()) {
-	    curr_class.visit();
-	    if (parentChildTable.contains(curr_class.getName())) {
-		ArrayList<class_c> children = parentChildTable.get(curr_class.getName());
-                //for element in children visitNode(element);
-		//placeholder for bugtesting
-		return false;
-	    } else {
-	        return false;
+    public void visitNode(class_c curr_class) {
+	if (firstRecurse) {
+    	    curr_class.visit();
+	    for (class_c child : parentChildTable.get(curr_class.getName())) {
+		firstRecurse = false;
+		visitNode(child);
 	    }
+	    curr_class.resetVisit();
 	} else {
-	    return true;
-	}
+	    if (curr_class.checkVisit()) {
+		semantError().println("Detected cyclic inheritance tree at node" + curr_class.getName().getString());
+	    } else {
+	        for (class_c child : parentChildTable.get(curr_class.getName())) {
+		    visitNode(child);
+		}
+	    }
+        }
     }
 
 
