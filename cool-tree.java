@@ -269,8 +269,9 @@ class programc extends Program {
     */
     public void semant() {
 	/* ClassTable constructor may do some semantic analysis */
+	System.out.println("Inside semant.");
 	ClassTable classTable = new ClassTable(classes);
-	
+	System.out.println("After classtable init.");
 	/* some semantic analysis code may go here */
 
 	if (classTable.errors()) {

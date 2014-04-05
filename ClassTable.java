@@ -271,10 +271,10 @@ class ClassTable {
 
 
             /*check curr_class types*/
-            if (check_uninheritable(curr_class)) {
+            /*if (check_uninheritable(curr_class)) {
             	semantError(curr_class).println("class " + curr_class.getName().toString()
                 	+ "cannot inherit class " + curr_class.getParent().getString());
-            }
+            }*/
 
 	}
 	/*At this point, all of our classes and parents should be stored.
@@ -288,29 +288,34 @@ class ClassTable {
 	    visitNode(curr_class);
 	    
 	}	
-	/*
-	if (!class_cTable.contains(main.getName())) {
+	
+	if (!class_cTable.containsKey(main.getName())) {
 	    semantError().println("No main class found.");
-	} */	
+	}	
 	
 
     }
 
     public void visitNode(class_c curr_class) {
+	//System.out.println(curr_class.getName().getString());
 	if (firstRecurse) {
     	    curr_class.visit();
-	    for (class_c child : parentChildTable.get(curr_class.getName())) {
-		firstRecurse = false;
-		visitNode(child);
-	    }
+	    if (parentChildTable.containsKey(curr_class.getName())) {
+	        for (class_c child : parentChildTable.get(curr_class.getName())) {
+		    firstRecurse = false;
+		    visitNode(child);
+	        }
+            }
 	    curr_class.resetVisit();
 	} else {
 	    if (curr_class.checkVisit()) {
-		semantError().println("Detected cyclic inheritance tree at node" + curr_class.getName().getString());
+		semantError().println("Detected cyclic inheritance tree at class " + curr_class.getName().getString());
 	    } else {
-	        for (class_c child : parentChildTable.get(curr_class.getName())) {
-		    visitNode(child);
-		}
+	            if (parentChildTable.containsKey(curr_class.getName())) {
+			for (class_c child : parentChildTable.get(curr_class.getName())) {
+		        visitNode(child);
+		    }
+ 	        }
 	    }
         }
     }
@@ -325,7 +330,7 @@ class ClassTable {
                 || parent.equals(Bool_class.getName())) {
             return true;
 	}
-	    return false;
+	return false;
     }
 
 
