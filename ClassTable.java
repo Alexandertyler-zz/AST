@@ -74,7 +74,7 @@ class ClassTable {
 	//                                 of class name
 	//        copy() : SELF_TYPE       returns a copy of the object
 
-	class_c Object_class = 
+	Object_class = 
 	    new class_c(0, 
 		       TreeConstants.Object_, 
 		       TreeConstants.No_class,
@@ -102,7 +102,7 @@ class ClassTable {
 	//        in_string() : Str            reads a string from the input
 	//        in_int() : Int                "   an int     "  "     "
 
-	class_c IO_class = 
+	IO_class = 
 	    new class_c(0,
 		       TreeConstants.IO,
 		       TreeConstants.Object_,
@@ -138,7 +138,7 @@ class ClassTable {
 	// The Int class has no methods and only a single attribute, the
 	// "val" for the integer.
 
-	class_c Int_class = 
+	Int_class = 
 	    new class_c(0,
 		       TreeConstants.Int,
 		       TreeConstants.Object_,
@@ -150,7 +150,7 @@ class ClassTable {
 		       filename);
 
 	// Bool also has only the "val" slot.
-	class_c Bool_class = 
+	Bool_class = 
 	    new class_c(0,
 		       TreeConstants.Bool,
 		       TreeConstants.Object_,
@@ -168,7 +168,7 @@ class ClassTable {
 	//       concat(arg: Str) : Str           performs string concatenation
 	//       substr(arg: Int, arg2: Int): Str substring selection
 
-	class_c Str_class =
+	Str_class =
 	    new class_c(0,
 		       TreeConstants.Str,
 		       TreeConstants.Object_,
@@ -271,10 +271,10 @@ class ClassTable {
 
 
             /*check curr_class types*/
-            /*if (check_uninheritable(curr_class)) {
-            	semantError(curr_class).println("class " + curr_class.getName().toString()
-                	+ "cannot inherit class " + curr_class.getParent().getString());
-            }*/
+            if (check_uninheritable(curr_class)) {
+            	semantError(curr_class).println("Class " + curr_class.getName().toString()
+                	+ " cannot inherit class " + curr_class.getParent().getString());
+            }
 
 	}
 	/*At this point, all of our classes and parents should be stored.
@@ -289,7 +289,7 @@ class ClassTable {
 	    
 	}	
 	
-	if (!class_cTable.containsKey(main.getName())) {
+	if (!class_cTable.containsKey(TreeConstants.Main)) {
 	    semantError().println("No main class found.");
 	}	
 	
