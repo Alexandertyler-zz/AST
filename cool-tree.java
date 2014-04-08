@@ -1365,6 +1365,11 @@ class isvoid extends Expression {
 	dump_type(out, n);
     }
 
+    public Object semantCheck(SymbolTable sym) {
+        el.semantCheck(sym);
+        return TreeConstants.Bool;
+    }
+
 }
 
 
@@ -1393,6 +1398,10 @@ class no_expr extends Expression {
 	dump_type(out, n);
     }
 
+    public Object semantCheck(SymbolTable sym) {
+        return TreeConstants.Object_;
+    }
+
 }
 
 
@@ -1417,8 +1426,7 @@ class object extends Expression {
         out.print(Utilities.pad(n) + "object\n");
         dump_AbstractSymbol(out, n+2, name);
     }
-
-    
+ 
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_object");
@@ -1426,6 +1434,8 @@ class object extends Expression {
 	dump_type(out, n);
     }
 
+    public Object semantCheck(SymbolTablym) {
+        return ClassTable.validateObject(name, sym, this.copy());
+    }
 }
-
 
