@@ -20,7 +20,7 @@ abstract class Program extends TreeNode {
     }
     public abstract void dump_with_types(PrintStream out, int n);
     public abstract void semant();
-
+    //a placeholder for semantCheck maybe
 }
 
 
@@ -34,6 +34,7 @@ abstract class Class_ extends TreeNode {
     public abstract AbstractSymbol getParent();
     public abstract AbstractSymbol getFilename();
     public abstract Features getFeatures();
+    //a placeholder for semantCheck maybe
 
 }
 
@@ -71,6 +72,7 @@ abstract class Feature extends TreeNode {
         super(lineNumber);
     }
     public abstract void dump_with_types(PrintStream out, int n);
+    //placeholder for semantCheck
 
 }
 
@@ -108,6 +110,7 @@ abstract class Formal extends TreeNode {
         super(lineNumber);
     }
     public abstract void dump_with_types(PrintStream out, int n);
+    //placeholder for semantCheck()
 
 }
 
@@ -154,6 +157,8 @@ abstract class Expression extends TreeNode {
         else
             { out.println(Utilities.pad(n) + ": _no_type"); }
     }
+    //placeholder for semantCheck
+    //assertType?
 
 }
 
@@ -191,6 +196,7 @@ abstract class Case extends TreeNode {
         super(lineNumber);
     }
     public abstract void dump_with_types(PrintStream out, int n);
+    //placeholder for semantCheck
 
 }
 
@@ -269,9 +275,11 @@ class programc extends Program {
     */
     public void semant() {
 	/* ClassTable constructor may do some semantic analysis */
+
 	//System.out.println("Inside semant.");
-	ClassTable classTable = new ClassTable(classes);
+	ClassTable cTable = new ClassTable(classes);
 	//System.out.println("After classtable init.");
+
 	/* some semantic analysis code may go here */
 
 	if (classTable.errors()) {
@@ -279,6 +287,13 @@ class programc extends Program {
 	    System.exit(1);
         }
     }
+
+    //We might need to put this above the error check above this comment
+    //or error check after it.
+    //make a sym table for use in semantCheck
+    SymbolTable sTable = new SymbolTable();
+
+    fullSemantCheck(sTable, cTable);
     
     /*Here we need to do the actual semant error check.
      * Not sure if I want to put it in ClassTable or not.
