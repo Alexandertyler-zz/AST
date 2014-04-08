@@ -1434,8 +1434,10 @@ class object extends Expression {
 	dump_type(out, n);
     }
 
-    public Object semantCheck(SymbolTablym) {
-        return ClassTable.validateObject(name, sym, this.copy());
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c class) {
+        AbstractSymbol symType = sTable.lookup(name);
+        AbstractSymbol classType = cTable.attrType(class.getName())
+
     }
 }
 
