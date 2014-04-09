@@ -276,9 +276,9 @@ class programc extends Program {
     public void semant() {
 	/* ClassTable constructor may do some semantic analysis */
 
-	//System.out.println("Inside semant.");
+	//Call a class table constructor that checks that
+	//it is well formed
 	ClassTable cTable = new ClassTable(classes);
-	//System.out.println("After classtable init.");
 
 	/* some semantic analysis code may go here */
 
@@ -287,14 +287,22 @@ class programc extends Program {
 	    System.exit(1);
         }
     }
-
-    //We might need to put this above the error check above this comment
-    //or error check after it.
+    //error check once now and once after semantCheck
+    
     //make a sym table for use in semantCheck
     SymbolTable sTable = new SymbolTable();
-
-    fullSemantCheck(sTable, cTable);
+    //this is where we actually walk through all of our classes and
+    //check them semantically
+    for (Enumeration e = classes.getElements(); e.hasMoreElements(); ) {
+        class_c curr_class = (class_c) cTable.nextElement();
+	curr_class.semantCheck(sTable, cTable);
+    }
     
+    if (classTable.errors()) {
+        System.err.println("Compilation halted due to static semantic errors.");
+        System.exit(1);
+    }
+
     /*Here we need to do the actual semant error check.
      * Not sure if I want to put it in ClassTable or not.
      * I could have it automatically check when class table is called.
@@ -304,8 +312,7 @@ class programc extends Program {
      *            
      *    
      */
-
-    
+   
 
 }
 
@@ -370,6 +377,20 @@ class class_c extends Class_ {
     public void visit()			{ visited = true; }
     public void resetVisit()		{ visited = false; }    
 
+
+    /* For this check, we initially add the self_type to the symbol
+     * table. Then we walk through each of the features of the 
+     * class and type check them.
+     */
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+	sTable.enterScope();
+        sym.addId(TreeConstants.self, TreeConstants.SELF_TYPE);
+	for (Enumeration e = features.getElements(); e.hasMoreElements(); ) {
+	    Feature feature = (Feature) e.nextElement();
+	    feature.semantCheck(sTable, cTable);
+	}
+        sTable.exitScope();
+    }
 }
 
 
@@ -498,6 +519,9 @@ class formalc extends Formal {
         dump_AbstractSymbol(out, n + 2, type_decl);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+	
+    }
 }
 
 
