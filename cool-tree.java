@@ -1381,7 +1381,7 @@ class string_const extends Expression {
 	dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable, cTable) {
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
 	//do nothing b/c its a constant
     }
 
@@ -1453,8 +1453,9 @@ class isvoid extends Expression {
 	dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable, cTable) {
-        el.semantCheck(sym);
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+        e1.semantCheck(sym);
+	this.set_type(TreeConstants.Bool);
     }
 
 }
@@ -1485,8 +1486,9 @@ class no_expr extends Expression {
 	dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sym) {
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
         //do nothing?
+	this.set_type(TreeConstants.No_type);
     }
 
 }
@@ -1521,12 +1523,17 @@ class object extends Expression {
 	dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c class) {
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
         AbstractSymbol symType = sTable.lookup(name);
-        AbstractSymbol classType = cTable.attrType(class.getName())
-	if (symType == null && classType) {
+        AbstractSymbol attrType = cTable.attrLookup(this)
+	if (symType == null && classType == null) {
 	    cTable.semantError("Object undefined");
         }   
+    	if (symTable != null) {
+	    this.set_type(symType);
+	} else if (attrType != null) {
+	    this.set_type(attrType);
+	}
     }
 }
 

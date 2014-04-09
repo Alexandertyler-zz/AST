@@ -333,6 +333,12 @@ class ClassTable {
 	return false;
     }
 
+    public AbstractSymbol attrLookup(class_c curr_class) {
+	Features features = curr_class.features;
+	for (Enumeration e = features.getElements(); e.hasMoreElements(); ) {
+	    Feature curr_feat = (Feature) e.nextElement();
+	    :
+    }
 
     /** Prints line number and file name of the given class.
      *
