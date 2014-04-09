@@ -44,8 +44,8 @@ class ClassTable {
     private class_c Str_class;
 
     /*Classwide variables for our hashtable. */
-    private Hashtable<AbstractSymbol, ArrayList<class_c>> parentChildTable;
-    private Hashtable<AbstractSymbol, class_c> class_cTable;
+    public Hashtable<AbstractSymbol, ArrayList<class_c>> parentChildTable;
+    public Hashtable<AbstractSymbol, class_c> class_cTable;
     
 
 
@@ -336,7 +336,7 @@ class ClassTable {
     public Formals formalLookup(AbstractSymbol className, AbstractSymbol myMethod) {
         class_c curr_class = class_cTable.get(className);
         if (curr_class == null) {
-            semantError("Class passed into formalLookup is not defined.");
+            semantError().println("Class passed into formalLookup is not defined.");
             return null;
         }
         Features features = curr_class.features;
@@ -354,14 +354,15 @@ class ClassTable {
         if (parent == null) {
             return null;
         } else {
-            formalLookup(parent, attribute);
+            formalLookup(parent, myMethod);
         }
+	return null;
     }
 
     public AbstractSymbol attrLookup(AbstractSymbol className, AbstractSymbol attribute) {
 	    class_c curr_class = class_cTable.get(className);
         if (curr_class == null) {
-            semantError("Class passed into attrLookup is not defined.");
+            semantError().println("Class passed into attrLookup is not defined.");
         }
 
         Features features = curr_class.features;
@@ -370,7 +371,7 @@ class ClassTable {
             if ((!(curr_feat instanceof method)) && (curr_feat != null)) {
                 attr curr_attr = (attr) curr_feat;
                 if (curr_attr.name.equals(attribute)) {
-                    return a.type_decl;
+                    return curr_attr.type_decl;
                 }
             }
         }
@@ -380,6 +381,7 @@ class ClassTable {
         } else {
             attrLookup(parent, attribute);
         }
+	return null;
     }
 
     public boolean typeCheck(AbstractSymbol type1, AbstractSymbol type2, class_c curr_class) {
@@ -391,7 +393,7 @@ class ClassTable {
             return true;
         }
 
-        if (type1.equals(TreeConstants.SELF_TYPE) {
+        if (type1.equals(TreeConstants.SELF_TYPE)) {
             type1 = curr_class.getName();
             if (type1.equals(type2)) {
                 return true;
@@ -402,12 +404,14 @@ class ClassTable {
             AbstractSymbol parent = (class_cTable.get(type1)).getParent();
             if (parent == null) {
                 return false;
-            } else if (parent.equals(type2) {
+            } else if (parent.equals(type2)) {
                 return true;
             } else {
                 type1 = parent;
             }
+	    return false;
         }
+	
     } 
 
     public AbstractSymbol LeastUpperBound(AbstractSymbol type1, AbstractSymbol type2, class_c curr_class) {
@@ -452,6 +456,7 @@ class ClassTable {
             type1Index--;
             type2Index--;
         }
+        return null;
     }
 
 
