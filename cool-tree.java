@@ -1057,6 +1057,12 @@ class divide extends Expression {
 	dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+	e1.semantCheck(sTable, cTable);
+	e2.semantCheck(sTable, cTable);
+
+	//assert?
+    }
 }
 
 
@@ -1088,6 +1094,12 @@ class neg extends Expression {
         out.println(Utilities.pad(n) + "_neg");
 	e1.dump_with_types(out, n + 2);
 	dump_type(out, n);
+    }
+
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+	e1.semantCheck(sTable, cTable);
+
+	//assert?
     }
 
 }
@@ -1128,6 +1140,13 @@ class lt extends Expression {
 	dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+	e1.semantCheck(sTable, cTable);
+	e2.semantCheck(sTable, cTable);
+
+	//assert?
+    }
+
 }
 
 
@@ -1164,6 +1183,13 @@ class eq extends Expression {
 	e1.dump_with_types(out, n + 2);
 	e2.dump_with_types(out, n + 2);
 	dump_type(out, n);
+    }
+
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+	e1.semantCheck(sTable, cTable);
+	e2.semantCheck(sTable, cTable);
+
+	//check equality types	
     }
 
 }
@@ -1204,6 +1230,12 @@ class leq extends Expression {
 	dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+	e1.semantCheck(sTable, cTable);
+	e2.semantCheck(sTable, cTable);
+
+	//assert?
+    }
 }
 
 
@@ -1237,6 +1269,9 @@ class comp extends Expression {
 	dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+	e1.semantCheck(sTable, cTable);
+    }
 }
 
 
@@ -1270,6 +1305,10 @@ class int_const extends Expression {
 	dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+        //do nothing
+    }
+
 }
 
 
@@ -1301,6 +1340,10 @@ class bool_const extends Expression {
         out.println(Utilities.pad(n) + "_bool");
 	dump_Boolean(out, n + 2, val);
 	dump_type(out, n);
+    }
+
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+	//do nothing
     }
 
 }
@@ -1338,6 +1381,10 @@ class string_const extends Expression {
 	dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable, cTable) {
+	//do nothing b/c its a constant
+    }
+
 }
 
 
@@ -1362,7 +1409,6 @@ class new_ extends Expression {
         out.print(Utilities.pad(n) + "new_\n");
         dump_AbstractSymbol(out, n+2, type_name);
     }
-
     
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
@@ -1370,7 +1416,10 @@ class new_ extends Expression {
 	dump_AbstractSymbol(out, n + 2, type_name);
 	dump_type(out, n);
     }
-
+	
+    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+	//do nothing?
+    }
 }
 
 
@@ -1404,9 +1453,8 @@ class isvoid extends Expression {
 	dump_type(out, n);
     }
 
-    public Object semantCheck(SymbolTable sym) {
+    public void semantCheck(SymbolTable sTable, ClassTable, cTable) {
         el.semantCheck(sym);
-        return TreeConstants.Bool;
     }
 
 }
@@ -1437,8 +1485,8 @@ class no_expr extends Expression {
 	dump_type(out, n);
     }
 
-    public Object semantCheck(SymbolTable sym) {
-        return TreeConstants.Object_;
+    public void semantCheck(SymbolTable sym) {
+        //do nothing?
     }
 
 }
@@ -1476,7 +1524,9 @@ class object extends Expression {
     public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c class) {
         AbstractSymbol symType = sTable.lookup(name);
         AbstractSymbol classType = cTable.attrType(class.getName())
-
+	if (symType == null && classType) {
+	    cTable.semantError("Object undefined");
+        }   
     }
 }
 
