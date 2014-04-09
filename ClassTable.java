@@ -333,12 +333,128 @@ class ClassTable {
 	return false;
     }
 
-    public AbstractSymbol attrLookup(class_c curr_class) {
-	Features features = curr_class.features;
-	for (Enumeration e = features.getElements(); e.hasMoreElements(); ) {
-	    Feature curr_feat = (Feature) e.nextElement();
-	    :
+    public Formals formalLookup(AbstractSymbol className, AbstractSymbol myMethod) {
+        class_c curr_class = class_cTable.get(className);
+        if (curr_class == null) {
+            semantError("Class passed into formalLookup is not defined.");
+            return null;
+        }
+        Features features = curr_class.features;
+	    for (Enumeration e = features.getElements(); e.hasMoreElements(); ) {
+	        Feature curr_feat = (Feature) e.nextElement();
+            if ((!(curr_feat instanceof attr)) && (curr_feat != null)) {
+                method curr_method = (method) curr_feat;
+                if (curr_method.name.equals(myMethod)) {
+                    return curr_method.formals;
+                }
+            }
+        }
+   
+        AbstractSymbol parent = curr_class.getParent();
+        if (parent == null) {
+            return null;
+        } else {
+            formalLookup(parent, attribute);
+        }
     }
+
+    public AbstractSymbol attrLookup(AbstractSymbol className, AbstractSymbol attribute) {
+	    class_c curr_class = class_cTable.get(className);
+        if (curr_class == null) {
+            semantError("Class passed into attrLookup is not defined.");
+        }
+
+        Features features = curr_class.features;
+	    for (Enumeration e = features.getElements(); e.hasMoreElements(); ) {
+	        Feature curr_feat = (Feature) e.nextElement();
+            if ((!(curr_feat instanceof method)) && (curr_feat != null)) {
+                attr curr_attr = (attr) curr_feat;
+                if (curr_attr.name.equals(attribute)) {
+                    return a.type_decl;
+                }
+            }
+        }
+        AbstractSymbol parent = curr_class.getParent();
+        if (parent == null) {
+            return null;
+        } else {
+            attrLookup(parent, attribute);
+        }
+    }
+
+    public boolean typeCheck(AbstractSymbol type1, AbstractSymbol type2, class_c curr_class) {
+        if (type1 == null || type2 == null) {
+            return false;
+        }
+
+        if (type1.equals(type2)) {
+            return true;
+        }
+
+        if (type1.equals(TreeConstants.SELF_TYPE) {
+            type1 = curr_class.getName();
+            if (type1.equals(type2)) {
+                return true;
+            }
+        }
+
+        while (true) {
+            AbstractSymbol parent = (class_cTable.get(type1)).getParent();
+            if (parent == null) {
+                return false;
+            } else if (parent.equals(type2) {
+                return true;
+            } else {
+                type1 = parent;
+            }
+        }
+    } 
+
+    public AbstractSymbol LeastUpperBound(AbstractSymbol type1, AbstractSymbol type2, class_c curr_class) {
+        if (type1.equals(type2)) {
+            return type1;
+        }
+
+        if (type1.equals(TreeConstants.SELF_TYPE)) {
+            type1 = curr_class.getName();
+        }
+        if (type2.equals(TreeConstants.SELF_TYPE)) {
+            type2 = curr_class.getName();
+        }
+
+        //add parents and current class to a list
+        ArrayList<AbstractSymbol> type1Family = new ArrayList<AbstractSymbol>();
+        ArrayList<AbstractSymbol> type2Family = new ArrayList<AbstractSymbol>();
+        AbstractSymbol type1Parent = class_cTable.get(type1).getParent();
+        AbstractSymbol type2Parent = class_cTable.get(type2).getParent();
+        
+        type1Family.add(type1);
+        type2Family.add(type2);
+        
+        while (type1Parent != null) {
+            type1Family.add(type1Parent);
+            type1Parent = class_cTable.get(type1Parent).getParent();
+        }
+        while (type2Parent != null) {
+            type2Family.add(type2Parent);
+            type2Parent = class_cTable.get(type2Parent).getParent();
+        }
+        
+        int type1Index = type1Family.size() -1;
+        int type2Index = type2Family.size() -1;
+        AbstractSymbol finalType = null;
+        while (type1Index >= 0 && type2Index >= 0) {
+            if (type1Family.get(type1Index).equals(type2Family.get(type2Index))) {
+                finalType = type1Family.get(type1Index);
+            } else {
+                return finalType;
+            }
+            type1Index--;
+            type2Index--;
+        }
+    }
+
+
 
     /** Prints line number and file name of the given class.
      *

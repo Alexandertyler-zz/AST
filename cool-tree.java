@@ -295,7 +295,7 @@ class programc extends Program {
     //check them semantically
     for (Enumeration e = classes.getElements(); e.hasMoreElements(); ) {
         class_c curr_class = (class_c) cTable.nextElement();
-	curr_class.semantCheck(sTable, cTable);
+	    curr_class.semantCheck(sTable, cTable, curr_class);
     }
     
     if (classTable.errors()) {
@@ -382,12 +382,12 @@ class class_c extends Class_ {
      * table. Then we walk through each of the features of the 
      * class and type check them.
      */
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
 	sTable.enterScope();
         sym.addId(TreeConstants.self, TreeConstants.SELF_TYPE);
 	for (Enumeration e = features.getElements(); e.hasMoreElements(); ) {
 	    Feature feature = (Feature) e.nextElement();
-	    feature.semantCheck(sTable, cTable);
+	    feature.semantCheck(sTable, cTable, curr_class);
 	}
         sTable.exitScope();
     }
@@ -440,6 +440,49 @@ class method extends Feature {
 	expr.dump_with_types(out, n + 2);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+        Formals parentFormals = cTable.formalLookup(curr_class.getParent(), name);
+        
+        if (parentFormals != null) {
+            if (parentFormals.getLength() == formals.getLength()) { 
+                int iter = 0;
+                for (Enumeration e = parentFormals.getElements(); e.hasMoreElements(); ) {
+                    formalc parentFormal = (formalc) e.nextElement();
+                    formalc currFormal = (formalc) formals.getNth(iter);
+                    iter++;
+                    if (!(parentFormal.type_decl.equals(currFormal.type_decl))) {
+                        cTable.semantError("Formal does not have the same type as parent formal.");
+                    }
+                }
+            } else {
+                cTable.semantError("Formals differ in length when overriding parent.");
+            }
+        }
+        
+        sTable.enterScope();
+        for (Enumeration e = formals.getElements(); e.hasMoreElements(); ) {
+            Formal currFormal = e.nextElement();
+            currFormal.semantCheck(sTable, cTable, curr_class);
+        }
+
+        AbstractSymbol returnType = return_type;
+        if(!returnType.equals(TreeConstants.SELF_TYPE) && !(cTable.class_cTable.containsKey(returnType))) {
+            cTable.semantError("Method return type is not found.");
+        }
+
+        if (returnType.equals(TreeConstants.SELF_TYPE)) {
+            returnType = curr_class.getName();
+        }
+
+        expr.semantCheck(sTable, cTable, curr_class);
+        if (cTable.typeCheck(expr.get_type(), returnType, curr_class)) { //assert expr.get_type == returnType
+                cTable.semantError("Method return type is not equal to expression return type.");
+        }
+        sTable.exitScope();
+
+
+    }
+
 }
 
 
@@ -482,6 +525,25 @@ class attr extends Feature {
 	init.dump_with_types(out, n + 2);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+        //check for inherited attributes that are being overwritten
+        AbstractSymbol parentAttr = cTable.attrLookup(curr_class.getParent(), name);
+        if (parentAttr != null) {
+            cTable.semantError("Redefining parent attribute.");
+        }
+
+        sTable.enterScope();
+        init.semantCheck(sTable, cTable, curr_class);
+        if (name.equals(TreeConstants.Self)) {
+            cTable.semantError("Attribute has name self.");
+        }
+        if (//assert expr type conforms to declared type & !No_type
+            cTable.semantError("Expr does not conform to declared type.");
+        }
+        sTable.exitScope();
+
+    }
+
 }
 
 
@@ -519,8 +581,19 @@ class formalc extends Formal {
         dump_AbstractSymbol(out, n + 2, type_decl);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
-	
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+	    if (name.equals(TreeConstants.self)) {
+            cTable.semantError("Self is used as a formal_c.");
+        }
+        AbstractSymbol sType = sTable.probe(name);
+        if (sType != null) {
+            cTable.semantError("Name is in current scope of symbol table.");
+        }
+        if (type.type_decl.equals(TreeConstants.SELF_TYPE)) {
+            cTable.semantError("Type is of type SELF_TYPE.");
+        }
+
+        sTable.addID(name, type_decl);
     }
 }
 
@@ -564,6 +637,13 @@ class branch extends Case {
 	expr.dump_with_types(out, n + 2);
     }
 
+    //branch doesn't need a type because it is a holder for an ID and an expression
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+        sTable.enterScope();
+        sTable.addID(name, type_decl);
+        expr.semantCheck(sTable, cTable, curr_class);
+        sTable.exitScope();
+
 }
 
 
@@ -602,6 +682,31 @@ class assign extends Expression {
 	dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+        if (name.equals(TreeConstants.self)) {
+            cTable.semantError("Cannot make assignment to self.");
+        }
+
+        expr.semantCheck(sTable, cTable, curr_class);
+
+        AbstractSymbol symType = (AbstractSymbol) sTable.lookup(name);
+        AbstractSymbol classType = (AbstractSymbol) cTable.attrLookup(curr_class.getName(), name);
+        if (symType == null && classType == null) {
+            cTable.semantError("Can't find symbol in assign.");
+        }
+        AbstractSymbol setType = null;
+        if (symType != null) {
+            setType = symType;
+        } else if (classType != null) {
+            setType = classType;
+        } else {
+            setType = TreeConstants.Object_;
+        }
+        //assert expr.get_type is setType
+
+        this.set_type(expr.get_type());
+       
+    }
 }
 
 
@@ -654,6 +759,29 @@ class static_dispatch extends Expression {
 	dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+        expr.semantCheck(sTable, cTable, curr_class);
+        
+        if (!cTable.typeCheck(expr.get_type(), type_name, curr_class)) {   //assert expr.get_type <= type_name
+            cTable.semantError("Static dispatch typeCheck failed.");
+        }
+
+        ArrayList<AbstractSymbol> argTypes = new ArrayList<AbstractSymbol>();
+        for (Enumeration e = actual.getElements(); e.hasMoreElements(); ) {
+            Expression expr = (Expression) e.nextElement();
+            expr.semantCheck(sTable, cTable, curr_class);
+            argTypes.add(expr.get_type());
+        }
+        //make sure class of expr has the method name, same number of args, and all types
+        //must match
+        AbstractSymbol returnType = null;
+        //if the method name has self_type as a return type, 
+        //we set the return type = to expr.get_type
+        if (returnType.equals(TreeConstants.SELF_TYPE) {
+            returnType = expr.get_type();
+        }
+        this.set_type(returnType);
+    }
 }
 
 
@@ -701,6 +829,25 @@ class dispatch extends Expression {
 	dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+        expr.semantCheck(sTable, cTable, curr_class);
+        
+        ArrayList<AbstractSymbol> argTypes = new ArrayList<AbstractSymbol>();
+        for (Enumeration e = actual.getElements(); e.hasMoreElements(); ) {
+            Expression expr = (Expression) e.nextElement();
+            expr.semantCheck(sTable, cTable, curr_class);
+            argTypes.add(expr.get_type());
+        }
+        //make sure class of expr has the method name, same number of args, and all types
+        //must match
+        AbstractSymbol returnType = null;
+        //if the method name has self_type as a return type, 
+        //we set the return type = to expr.get_type
+        if (returnType.equals(TreeConstants.SELF_TYPE) {
+            returnType = expr.get_type();
+        }
+        this.set_type(returnType);
+    }
 }
 
 
@@ -744,6 +891,16 @@ class cond extends Expression {
 	dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+        pred.semantCheck(sTable, cTable, curr_class);
+        if (cTable.typeCheck(pred.get_type(), TreeConstants.Bool, curr_class) {  //assert pred is a bool
+            cTable.semantError("Predicate in Conditional is not a bool.");
+        }
+        then_exp.semantCheck(sTable, cTable, curr_class);
+        else_exp.semantCheck(sTable, cTable, curr_class);
+        this.set_type(cTable.LeastUpperBound(then_exp, else_exp, curr_class));
+    }
+
 }
 
 
@@ -782,6 +939,14 @@ class loop extends Expression {
 	dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+        pred.semantCheck(sTable, cTable, curr_class);       
+        if (cTable.typeCheck(pred.get_type(), TreeConstants.Bool, curr_class) {  //assert pred is a bool
+            cTable.semantError("Predicate in Conditional is not a bool.");
+        }
+        body.semantCheck(sTable, cTable, curr_class);
+        this.set_type(TreeConstants.Object);
+    }
 }
 
 
@@ -822,6 +987,34 @@ class typcase extends Expression {
 	dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+        expr.semantCheck(sTable, cTable, curr_class);
+        branch curr_branch = null;
+        ArrayList<String> typeList = new ArrayList<String>();
+        ArrayList<AbstractSymbol> exprTypes = new ArrayList<AbstractSymbol>();
+        for (Enumeration e = cases.getElements(); e.hasMoreElements(); ) {
+            curr_branch = (branch) e.nextElement();
+            curr_branch.semantCheck(sTable, cTable, class_c curr_class);
+            if (typeList.contains(curr_branch.type_decl.getString())) {
+                cTable.semantError("More than one of the same type in case: " + curr_branch.type_decl.toString());
+            } else {
+                typeList.add(curr_branch.type_decl.getString());
+            }
+            exprTypes.add(curr_branch.expr.get_type());
+        }
+        if (curr_branch == null) {
+            cTable.semantError("No cases for typcase.");
+            this.set_type(TreeConstants.No_type);
+        } else {
+            AbstractSymbol curr_type = typeList.get(0);
+            for (int i = 1; i < typeList.size(); i++) {
+                curr_type = cTable.LeastUpperBound(curr_type, typeList.get(i), curr_class);
+            }
+            this.set_type(curr_type);
+            //lublublublublub
+        }
+    }
+
 }
 
 
@@ -854,9 +1047,26 @@ class block extends Expression {
         for (Enumeration e = body.getElements(); e.hasMoreElements();) {
 	    ((Expression)e.nextElement()).dump_with_types(out, n + 2);
         }
-	dump_type(out, n);
+	    dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+        sTable.enterScope();
+        Expression expr = null; //possible error if not set to null
+        for (Enumeration e = body.getElements(); e.hasMoreElements(); ){
+            expr = (Expression) e.nextElement();
+            expr.semantCheck(sTable, cTable, curr_class);
+        }
+
+        if (expr == null) {
+            this.set_type(TreeConstants.No_type);
+            cTable.semantError("Block has no expressions.");
+        } else {
+            this.set_type(expr.get_type());
+        }
+
+        sTable.exitScope();
+    }
 }
 
 
@@ -905,6 +1115,33 @@ class let extends Expression {
 	dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+        sTable.enterScope();
+        sTable.addId(identifier, type_decl);
+        
+        if (identifier.equals(TreeConstants.self)) {
+            cTable.semantError("Cannot use self as an identifier in a let statement.");
+        }
+
+        AbstractSymbol type = type_decl;
+        if (type.equals(TreeConstants.SELF_TYPE)) {
+            type = //curr_class.getName();
+        }
+        
+        init.semantCheck(sTable, cTable, curr_class);
+        body.semantCheck(sTable, cTable, curr_class);
+
+        //checks if init exists, then make sure its type conforms with declared type, "type"
+        if (!init.get_type().equals(TreeConstants.No_type)) {
+            if (cTable.typeCheck(init.get_type(), type_decl, curr_class) {  //assert with init with "type"
+                cTable.semantError("Type declaration in let does not match init type.");
+            }
+        }
+        
+        this.set_type(body.get_type());
+
+        sTable.exitScope();
+    }
 }
 
 
@@ -938,9 +1175,21 @@ class plus extends Expression {
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_plus");
-	e1.dump_with_types(out, n + 2);
-	e2.dump_with_types(out, n + 2);
-	dump_type(out, n);
+	    e1.dump_with_types(out, n + 2);
+	    e2.dump_with_types(out, n + 2);
+	    dump_type(out, n);
+    }
+
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+        e1.semantCheck(sTable, cTable, curr_class);
+        e2.semantCheck(sTable, cTable, curr_class);
+
+        //assert int
+        if (!(cTable.typeCheck(e1.get_type(), TreeConstants.Int, curr_class)) || 
+                    !(cTable.typeCheck(e2.get_type(), TreeConstants.Int, curr_class))) {
+            cTable.semantError("E1 or E2 is not of type int in plus.");
+        }
+        self.set_type(TreeConstants.Int);
     }
 
 }
@@ -981,6 +1230,18 @@ class sub extends Expression {
 	dump_type(out, n);
     }
 
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+        e1.semantCheck(sTable, cTable, curr_class);
+        e2.semantCheck(sTable, cTable, curr_class);
+
+        //assert int
+        if (!(cTable.typeCheck(e1.get_type(), TreeConstants.Int, curr_class)) || 
+                    !(cTable.typeCheck(e2.get_type(), TreeConstants.Int, curr_class))) {
+            cTable.semantError("E1 or E2 is not of type int in sub.");
+        }
+        self.set_type(TreeConstants.Int);
+    }
+
 }
 
 
@@ -1014,9 +1275,21 @@ class mul extends Expression {
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_mul");
-	e1.dump_with_types(out, n + 2);
-	e2.dump_with_types(out, n + 2);
-	dump_type(out, n);
+	    e1.dump_with_types(out, n + 2);
+	    e2.dump_with_types(out, n + 2);
+	    dump_type(out, n);
+    }
+
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+        e1.semantCheck(sTable, cTable, curr_class);
+        e2.semantCheck(sTable, cTable, curr_class);
+
+        //assert int
+        if (!(cTable.typeCheck(e1.get_type(), TreeConstants.Int, curr_class)) || 
+                    !(cTable.typeCheck(e2.get_type(), TreeConstants.Int, curr_class))) {
+            cTable.semantError("E1 or E2 is not of type int in mul.");
+        }
+        self.set_type(TreeConstants.Int);
     }
 
 }
@@ -1052,16 +1325,21 @@ class divide extends Expression {
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_divide");
-	e1.dump_with_types(out, n + 2);
-	e2.dump_with_types(out, n + 2);
-	dump_type(out, n);
+	    e1.dump_with_types(out, n + 2);
+	    e2.dump_with_types(out, n + 2);
+	    dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
-	e1.semantCheck(sTable, cTable);
-	e2.semantCheck(sTable, cTable);
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+	    e1.semantCheck(sTable, cTable, curr_class);
+	    e2.semantCheck(sTable, cTable, curr_class);
 
-	//assert?
+	    //assert Int
+        if (!(cTable.typeCheck(e1.get_type(), TreeConstants.Int, curr_class)) || 
+                    !(cTable.typeCheck(e2.get_type(), TreeConstants.Int, curr_class))) {
+            cTable.semantError("E1 or E2 is not of type int in divide.");
+        }
+        this.set_type(TreeConstants.Int);
     }
 }
 
@@ -1096,10 +1374,14 @@ class neg extends Expression {
 	dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
-	e1.semantCheck(sTable, cTable);
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+	    e1.semantCheck(sTable, cTable, curr_class);
 
-	//assert?
+	    //assert int
+        if (!cTable.typeCheck(e1.get_type(), TreeConstants.Int, curr_class)) {
+            cTable.semantError("E1 is not of type int in Neg.");
+        }
+        this.set_type(TreeConstants.Int);
     }
 
 }
@@ -1135,16 +1417,22 @@ class lt extends Expression {
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_lt");
-	e1.dump_with_types(out, n + 2);
-	e2.dump_with_types(out, n + 2);
-	dump_type(out, n);
+	    e1.dump_with_types(out, n + 2);
+	    e2.dump_with_types(out, n + 2);
+	    dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
-	e1.semantCheck(sTable, cTable);
-	e2.semantCheck(sTable, cTable);
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+	    e1.semantCheck(sTable, cTable, curr_class);
+	    e2.semantCheck(sTable, cTable, curr_class);
 
-	//assert?
+	    //assert?
+        if (!(cTable,typeCheck(e1.get_type(), TreeConstants.Int, curr_class)) || 
+                    !(cTable.typeCheck(e2.get_type(), TreeConstants.Int, curr_class))) {
+            cTable.semantError("E1 or E2 is not of type int in lt.");
+        }
+        
+        this.set_type(TreeConstants.Bool);
     }
 
 }
@@ -1185,11 +1473,22 @@ class eq extends Expression {
 	dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
-	e1.semantCheck(sTable, cTable);
-	e2.semantCheck(sTable, cTable);
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+	    e1.semantCheck(sTable, cTable, curr_class);
+	    e2.semantCheck(sTable, cTable, curr_class);
 
-	//check equality types	
+	    //check equality types
+        AbstractSymbol type1 = e1.get_type();
+        AbstractSymbol type2 = e2.get_type();
+
+        if ((type1.equals(TreeConstants.Int) || type1.equals(TreeConstants.Str) || type1.equals(TreeConstants.Bool)) ||
+            (type2.equals(TreeConstants.Int) || type1.equals(TreeConstants.Str) || type2.equals(TreeConstants.Bool))) {
+            if (!type1.equals(type2)) {
+                cTable.semantError("Equivalence error on different types");
+            }
+        }
+
+        this.set_type(TreeConstants.Bool);
     }
 
 }
@@ -1230,11 +1529,16 @@ class leq extends Expression {
 	dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
-	e1.semantCheck(sTable, cTable);
-	e2.semantCheck(sTable, cTable);
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+	    e1.semantCheck(sTable, cTable, curr_class);
+	    e2.semantCheck(sTable, cTable, curr_class);
 
-	//assert?
+	    //check e1 and e2 inheritance are ints
+        if (!(cTable.typeCheck(e1.get_type(), TreeConstants.Int, curr_class)) || 
+                    !(cTable.typeCheck(e2.get_type(), TreeConstants.Int, curr_class))) {
+            cTable.semantError("E1 or E2 is not of type int in leq.");
+        }
+        this.set_type(TreeConstants.Bool);
     }
 }
 
@@ -1269,8 +1573,9 @@ class comp extends Expression {
 	dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
-	e1.semantCheck(sTable, cTable);
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+	    e1.semantCheck(sTable, cTable, curr_class);
+        this.set_type(TreeConstants.Bool);
     }
 }
 
@@ -1305,8 +1610,9 @@ class int_const extends Expression {
 	dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
         //do nothing
+        this.set_type(TreeConstants.Int);
     }
 
 }
@@ -1342,8 +1648,9 @@ class bool_const extends Expression {
 	dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
 	//do nothing
+        this.set_type(TreeConstants.Bool);
     }
 
 }
@@ -1381,8 +1688,9 @@ class string_const extends Expression {
 	dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
 	//do nothing b/c its a constant
+        this.set_type(TreeConstants.Str);
     }
 
 }
@@ -1417,8 +1725,9 @@ class new_ extends Expression {
 	dump_type(out, n);
     }
 	
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
-	//do nothing?
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
+	//do nothing
+        this.set_type(type_name);
     }
 }
 
@@ -1453,9 +1762,9 @@ class isvoid extends Expression {
 	dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
         e1.semantCheck(sym);
-	this.set_type(TreeConstants.Bool);
+	    this.set_type(TreeConstants.Bool);
     }
 
 }
@@ -1486,7 +1795,7 @@ class no_expr extends Expression {
 	dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
         //do nothing?
 	this.set_type(TreeConstants.No_type);
     }
@@ -1523,17 +1832,17 @@ class object extends Expression {
 	dump_type(out, n);
     }
 
-    public void semantCheck(SymbolTable sTable, ClassTable cTable) {
+    public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
         AbstractSymbol symType = sTable.lookup(name);
-        AbstractSymbol attrType = cTable.attrLookup(this)
-	if (symType == null && classType == null) {
-	    cTable.semantError("Object undefined");
+        AbstractSymbol attrType = cTable.attrLookup(curr_class.getName(), name);
+	    if (symType == null && classType == null) {
+	        cTable.semantError("Object undefined");
         }   
     	if (symTable != null) {
-	    this.set_type(symType);
-	} else if (attrType != null) {
-	    this.set_type(attrType);
-	}
+	        this.set_type(symType);
+	    } else if (attrType != null) {
+	        this.set_type(attrType);
+	    }
     }
 }
 
