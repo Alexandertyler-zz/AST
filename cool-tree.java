@@ -160,6 +160,7 @@ abstract class Expression extends TreeNode {
     }
     //placeholder for semantCheck
     public abstract void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class);
+
     //assertType?
 
 }
@@ -297,6 +298,7 @@ class programc extends Program {
     	//check them semantically
     	for (Enumeration e = classes.getElements(); e.hasMoreElements(); ) {
         	class_c curr_class = (class_c) e.nextElement();
+		System.out.println("Performing initial semantCheck on class_c " + curr_class.getName());
 	    	curr_class.semantCheck(sTable, cTable, curr_class);
     	}
     
@@ -385,9 +387,11 @@ class class_c extends Class_ {
      */
     public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
 	sTable.enterScope();
+	System.out.println("Curr_class in class_c is " + curr_class.getName());
         sTable.addId(TreeConstants.self, TreeConstants.SELF_TYPE);
 	for (Enumeration e = features.getElements(); e.hasMoreElements(); ) {
 	    Feature curr_feat = (Feature) e.nextElement();
+	    System.out.println("Performing semantCheck in class_c on Feature " + curr_feat);
 	    curr_feat.semantCheck(sTable, cTable, curr_class);
 	}
         sTable.exitScope();
@@ -528,13 +532,17 @@ class attr extends Feature {
 
     public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
         //check for inherited attributes that are being overwritten
+	System.out.println("Curr_class in attr is " + curr_class.getName());
         AbstractSymbol parentAttr = cTable.attrLookup(curr_class.getParent(), name);
         if (parentAttr != null) {
             cTable.semantError().println("Redefining parent attribute.");
         }
 
         sTable.enterScope();
-        init.semantCheck(sTable, cTable, curr_class);
+	System.out.println("init: " + init);
+	init.semantCheck(sTable, cTable, curr_class);
+	System.out.println("After init.");
+
         if (name.equals(TreeConstants.self)) {
             cTable.semantError().println("Attribute has name self.");
         }
@@ -1798,6 +1806,7 @@ class no_expr extends Expression {
 
     public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
         //do nothing?
+	System.out.println("Inside of no_expr semant check.");
 	this.set_type(TreeConstants.No_type);
     }
 

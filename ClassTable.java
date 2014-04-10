@@ -222,10 +222,10 @@ class ClassTable {
 	class_cTable.put(Str_class.getName(), Str_class);
 
 	Object_class.dump_with_types(System.err, 0);
-	IO_class.dump_with_types(System.err, 0);
-	Int_class.dump_with_types(System.err, 0);
-	Bool_class.dump_with_types(System.err, 0);
-	Str_class.dump_with_types(System.err, 0);
+	//IO_class.dump_with_types(System.err, 0);
+	//Int_class.dump_with_types(System.err, 0);
+	//Bool_class.dump_with_types(System.err, 0);
+	//Str_class.dump_with_types(System.err, 0);
     }
 	
 
@@ -362,7 +362,8 @@ class ClassTable {
     public AbstractSymbol attrLookup(AbstractSymbol className, AbstractSymbol attribute) {
 	    class_c curr_class = class_cTable.get(className);
         if (curr_class == null) {
-            semantError().println("Class passed into attrLookup is not defined.");
+            semantError().println("Class " + className.toString() + " passed into attrLookup is not defined.");
+	    return null;
         }
 
         Features features = curr_class.features;

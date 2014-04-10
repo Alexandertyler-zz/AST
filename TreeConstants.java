@@ -70,6 +70,9 @@ class TreeConstants {
     public static final AbstractSymbol No_type 
 	= AbstractTable.idtable.addString("_no_type");
 
+    public static final AbstractSymbol No_expr
+	= AbstractTable.idtable.addString("_no_expr");
+
     public static final AbstractSymbol Object_ = 
 	AbstractTable.idtable.addString("Object");
     
