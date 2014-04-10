@@ -221,7 +221,7 @@ class ClassTable {
 	class_cTable.put(Bool_class.getName(), Bool_class);
 	class_cTable.put(Str_class.getName(), Str_class);
 
-	Object_class.dump_with_types(System.err, 0);
+	//Object_class.dump_with_types(System.err, 0);
 	//IO_class.dump_with_types(System.err, 0);
 	//Int_class.dump_with_types(System.err, 0);
 	//Bool_class.dump_with_types(System.err, 0);
@@ -351,7 +351,7 @@ class ClassTable {
         }
    
         AbstractSymbol parent = curr_class.getParent();
-        if (parent == null) {
+        if (parent == null || parent.equals(TreeConstants.No_class)) {
             return null;
         } else {
             formalLookup(parent, myMethod);
@@ -377,7 +377,7 @@ class ClassTable {
             }
         }
         AbstractSymbol parent = curr_class.getParent();
-        if (parent == null) {
+        if (parent == null || parent.equals(TreeConstants.No_class)) {
             return null;
         } else {
             attrLookup(parent, attribute);
@@ -386,8 +386,11 @@ class ClassTable {
     }
 
     public boolean typeCheck(AbstractSymbol type1, AbstractSymbol type2, class_c curr_class) {
-        if (type1 == null || type2 == null) {
-            return false;
+        
+	if (type1 == null || type2 == null || (class_cTable.get(type1) == null && !(type1.equals(TreeConstants.SELF_TYPE)))
+		 || ((class_cTable.get(type2) == null) && !(type2.equals(TreeConstants.SELF_TYPE)))) {
+            //System.out.println("Class_cTable type1 is " + class_cTable.get(type1) + " and type1 is " + type1);
+	    return false;
         }
 
         if (type1.equals(type2)) {
@@ -401,6 +404,8 @@ class ClassTable {
             }
         }
 
+	//System.out.println(type1);
+	//System.out.println(class_cTable.get(type1));	
         while (true) {
             AbstractSymbol parent = (class_cTable.get(type1)).getParent();
             if (parent == null) {
@@ -410,7 +415,7 @@ class ClassTable {
             } else {
                 type1 = parent;
             }
-	    return false;
+	    //return false;
         }
 	
     } 
@@ -460,6 +465,45 @@ class ClassTable {
         return null;
     }
 
+    public AbstractSymbol toReturn(AbstractSymbol specifiedClassName, class_c curr_class, AbstractSymbol methodName, ArrayList<AbstractSymbol> argTypes) {
+	if (specifiedClassName.equals(TreeConstants.SELF_TYPE)) {
+	    specifiedClassName = curr_class.getName();
+	}
+	
+        class_c specifiedClass = class_cTable.get(specifiedClassName);
+        if (specifiedClass == null) {
+            semantError().println("Specified class in toReturn is not in class_cTable.");
+	}
+	for (Enumeration e = (specifiedClass.features).getElements(); e.hasMoreElements(); ) {
+	    Feature curr_feat = (Feature) e.nextElement();
+	    if (!(curr_feat instanceof attr) && curr_feat != null) {
+		method curr_method = (method) curr_feat;
+		if (curr_method.name.equals(methodName)) {
+		    if (!(argTypes.size() == curr_method.formals.getLength())) {
+		        semantError().println("Dispatch arg length doesn't match definition arg length.");
+			return curr_method.return_type;
+		    }
+		    int iter = 0;
+		    for (Enumeration f = (curr_method.formals).getElements(); f.hasMoreElements(); ) {
+			formalc curr_formal = (formalc) f.nextElement();
+			if (!typeCheck(argTypes.get(iter), curr_formal.type_decl, curr_class)) {
+			    semantError().println("Dispatch types don't match.");
+			    break;
+			}
+			iter++;
+		    }
+		    return curr_method.return_type;
+		}
+	    }
+	}
+        AbstractSymbol parent = curr_class.getParent();
+        if (parent == null || parent.equals(TreeConstants.No_class)) {
+            return null;
+        } else {
+            toReturn(parent, curr_class, methodName, argTypes);
+        }
+	return null;
+    }
 
 
     /** Prints line number and file name of the given class.

@@ -298,7 +298,7 @@ class programc extends Program {
     	//check them semantically
     	for (Enumeration e = classes.getElements(); e.hasMoreElements(); ) {
         	class_c curr_class = (class_c) e.nextElement();
-		System.out.println("Performing initial semantCheck on class_c " + curr_class.getName());
+		//System.out.println("Performing initial semantCheck on class_c " + curr_class.getName());
 	    	curr_class.semantCheck(sTable, cTable, curr_class);
     	}
     
@@ -387,14 +387,15 @@ class class_c extends Class_ {
      */
     public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
 	sTable.enterScope();
-	System.out.println("Curr_class in class_c is " + curr_class.getName());
+	//System.out.println("Curr_class in class_c is " + curr_class.getName());
         sTable.addId(TreeConstants.self, TreeConstants.SELF_TYPE);
 	for (Enumeration e = features.getElements(); e.hasMoreElements(); ) {
 	    Feature curr_feat = (Feature) e.nextElement();
-	    System.out.println("Performing semantCheck in class_c on Feature " + curr_feat);
+	    //System.out.println("Performing semantCheck in class_c on Feature " + curr_feat);
 	    curr_feat.semantCheck(sTable, cTable, curr_class);
 	}
         sTable.exitScope();
+	
     }
 }
 
@@ -480,8 +481,11 @@ class method extends Feature {
         }
 
         expr.semantCheck(sTable, cTable, curr_class);
-        if (cTable.typeCheck(expr.get_type(), returnType, curr_class)) { //assert expr.get_type == returnType
-                cTable.semantError().println("Method return type is not equal to expression return type.");
+        //System.out.println("Expression type is " + expr.get_type());
+	//System.out.println(returnType);
+	if (!cTable.typeCheck(expr.get_type(), returnType, curr_class)) { //assert expr.get_type == returnType
+                System.out.println("Expression is " + expr.get_type() + " and return type is " + returnType);
+		cTable.semantError().println("Method return type is not equal to expression return type.");
         }
         sTable.exitScope();
 
@@ -533,17 +537,20 @@ class attr extends Feature {
     public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
         //check for inherited attributes that are being overwritten
 	
-	System.out.println("Curr_class in attr is " + curr_class.getName());
-        AbstractSymbol parentAttr = cTable.attrLookup(curr_class.getParent(), name);
-        if (parentAttr != null) {
-            cTable.semantError().println("Redefining parent attribute.");
-        }
-
+	//System.out.println("Curr_class in attr is " + curr_class.getName());
+	AbstractSymbol parentName = curr_class.getParent();
+	//System.out.println(parentName);
+	if (!(parentName.equals(TreeConstants.No_class))) {
+            AbstractSymbol parentAttr = cTable.attrLookup(curr_class.getParent(), name);
+            if (parentAttr != null) {
+                cTable.semantError().println("Redefining parent attribute.");
+            }
+	}
+	//System.out.println("Outside");
         sTable.enterScope();
-	System.out.println("init: " + init);
-	no_expr e = (no_expr) init;
-	e.semantCheck(sTable, cTable, curr_class);
-	System.out.println("After init.");
+	//System.out.println("init: " + init);
+	init.semantCheck(sTable, cTable, curr_class);
+	//System.out.println("After init.");
 
         if (name.equals(TreeConstants.self)) {
             cTable.semantError().println("Attribute has name self.");
@@ -654,7 +661,7 @@ class branch extends Case {
         sTable.addId(name, type_decl);
         expr.semantCheck(sTable, cTable, curr_class);
         sTable.exitScope();
-
+    }
 }
 
 
@@ -785,7 +792,11 @@ class static_dispatch extends Expression {
         }
         //make sure class of expr has the method name, same number of args, and all types
         //must match
-        AbstractSymbol returnType = null;
+        AbstractSymbol returnType = cTable.toReturn(type_name, curr_class, name, argTypes);
+	if (returnType == null) {
+	    cTable.semantError().println("Can't find method in class in static dispatch.");
+	    returnType = TreeConstants.Object_;
+	}
         //if the method name has self_type as a return type, 
         //we set the return type = to expr.get_type
         if (returnType.equals(TreeConstants.SELF_TYPE)) {
@@ -851,12 +862,17 @@ class dispatch extends Expression {
         }
         //make sure class of expr has the method name, same number of args, and all types
         //must match
-        AbstractSymbol returnType = null;
+        AbstractSymbol returnType = cTable.toReturn(expr.get_type(), curr_class, name, argTypes);
+	if (returnType == null) {
+	    cTable.semantError().println("Can't find method in class in dispatch.");
+	    returnType = TreeConstants.Object_;
+	}
         //if the method name has self_type as a return type, 
         //we set the return type = to expr.get_type
         if (returnType.equals(TreeConstants.SELF_TYPE)) {
             returnType = expr.get_type();
         }
+        
         this.set_type(returnType);
     }
 }
@@ -1202,7 +1218,6 @@ class plus extends Expression {
         }
         this.set_type(TreeConstants.Int);
     }
-
 }
 
 
@@ -1252,7 +1267,6 @@ class sub extends Expression {
         }
         this.set_type(TreeConstants.Int);
     }
-
 }
 
 
@@ -1445,7 +1459,6 @@ class lt extends Expression {
         
         this.set_type(TreeConstants.Bool);
     }
-
 }
 
 
@@ -1743,7 +1756,7 @@ class new_ extends Expression {
 }
 
 
-/** Defines AST constructor 'isvoid'.
+/* Defines AST constructor 'isvoid'.
     <p>
     See <a href="TreeNode.html">TreeNode</a> for full documentation. */
 class isvoid extends Expression {
@@ -1781,11 +1794,11 @@ class isvoid extends Expression {
 }
 
 
-/** Defines AST constructor 'no_expr'.
+/* Defines AST constructor 'no_expr'.
     <p>
     See <a href="TreeNode.html">TreeNode</a> for full documentation. */
 class no_expr extends Expression {
-    /** Creates "no_expr" AST node. 
+    /* Creates "no_expr" AST node. 
       *
       * @param lineNumber the line in the source file from which this node came.
       */
@@ -1798,7 +1811,6 @@ class no_expr extends Expression {
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "no_expr\n");
     }
-
     
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
@@ -1808,10 +1820,9 @@ class no_expr extends Expression {
 
     public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
         //do nothing?
-	System.out.println("Inside of no_expr semant check.");
+	//System.out.println("Inside of no_expr semant check.");
 	this.set_type(TreeConstants.No_type);
     }
-
 }
 
 
@@ -1847,15 +1858,13 @@ class object extends Expression {
     public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
         AbstractSymbol symType = (AbstractSymbol) sTable.lookup(name);
         AbstractSymbol attrType = cTable.attrLookup(curr_class.getName(), name);
-	    if (symType == null && attrType == null) {
-	        cTable.semantError().println("Object undefined");
+	if (symType == null && attrType == null) {
+	    cTable.semantError().println("Object undefined");
         }   
     	if (symType != null) {
 	        this.set_type(symType);
-	    } else if (attrType != null) {
+	} else if (attrType != null) {
 	        this.set_type(attrType);
-	    }
 	}
     }
 }
-
