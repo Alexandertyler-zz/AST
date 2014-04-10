@@ -532,6 +532,7 @@ class attr extends Feature {
 
     public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
         //check for inherited attributes that are being overwritten
+	
 	System.out.println("Curr_class in attr is " + curr_class.getName());
         AbstractSymbol parentAttr = cTable.attrLookup(curr_class.getParent(), name);
         if (parentAttr != null) {
@@ -540,7 +541,8 @@ class attr extends Feature {
 
         sTable.enterScope();
 	System.out.println("init: " + init);
-	init.semantCheck(sTable, cTable, curr_class);
+	no_expr e = (no_expr) init;
+	e.semantCheck(sTable, cTable, curr_class);
 	System.out.println("After init.");
 
         if (name.equals(TreeConstants.self)) {
