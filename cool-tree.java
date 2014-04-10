@@ -920,7 +920,7 @@ class cond extends Expression {
 
     public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
         pred.semantCheck(sTable, cTable, curr_class);
-        if (cTable.typeCheck(pred.get_type(), TreeConstants.Bool, curr_class)) {  //assert pred is a bool
+        if (!cTable.typeCheck(pred.get_type(), TreeConstants.Bool, curr_class)) {  //assert pred is a bool
             cTable.semantError().println("Predicate in Conditional is not a bool.");
         }
         then_exp.semantCheck(sTable, cTable, curr_class);
@@ -968,7 +968,7 @@ class loop extends Expression {
 
     public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
         pred.semantCheck(sTable, cTable, curr_class);       
-        if (cTable.typeCheck(pred.get_type(), TreeConstants.Bool, curr_class)) {  //assert pred is a bool
+        if (!cTable.typeCheck(pred.get_type(), TreeConstants.Bool, curr_class)) {  //assert pred is a bool
             cTable.semantError().println("Predicate in Conditional is not a bool.");
         }
         body.semantCheck(sTable, cTable, curr_class);
@@ -1160,7 +1160,7 @@ class let extends Expression {
 
         //checks if init exists, then make sure its type conforms with declared type, "type"
         if (!init.get_type().equals(TreeConstants.No_type)) {
-            if (cTable.typeCheck(init.get_type(), type_decl, curr_class)) {  //assert with init with "type"
+            if (!cTable.typeCheck(init.get_type(), type_decl, curr_class)) {  //assert with init with "type"
                 cTable.semantError().println("Type declaration in let does not match init type.");
             }
         }
@@ -1859,6 +1859,8 @@ class object extends Expression {
         AbstractSymbol symType = (AbstractSymbol) sTable.lookup(name);
         AbstractSymbol attrType = cTable.attrLookup(curr_class.getName(), name);
 	if (symType == null && attrType == null) {
+            System.out.println(lineNumber+" "+name);
+            System.out.println(curr_class.getName());
 	    cTable.semantError().println("Object undefined");
         }   
     	if (symType != null) {

@@ -354,9 +354,8 @@ class ClassTable {
         if (parent == null || parent.equals(TreeConstants.No_class)) {
             return null;
         } else {
-            formalLookup(parent, myMethod);
+            return formalLookup(parent, myMethod);
         }
-	return null;
     }
 
     public AbstractSymbol attrLookup(AbstractSymbol className, AbstractSymbol attribute) {
@@ -380,9 +379,8 @@ class ClassTable {
         if (parent == null || parent.equals(TreeConstants.No_class)) {
             return null;
         } else {
-            attrLookup(parent, attribute);
+            return attrLookup(parent, attribute);
         }
-	return null;
     }
 
     public boolean typeCheck(AbstractSymbol type1, AbstractSymbol type2, class_c curr_class) {
@@ -441,11 +439,11 @@ class ClassTable {
         type1Family.add(type1);
         type2Family.add(type2);
         
-        while (type1Parent != null) {
+        while (type1Parent != null && class_cTable.get(type1Parent) != null) {
             type1Family.add(type1Parent);
             type1Parent = class_cTable.get(type1Parent).getParent();
         }
-        while (type2Parent != null) {
+        while (type2Parent != null && class_cTable.get(type2Parent) != null) {
             type2Family.add(type2Parent);
             type2Parent = class_cTable.get(type2Parent).getParent();
         }
@@ -496,13 +494,13 @@ class ClassTable {
 		}
 	    }
 	}
-        AbstractSymbol parent = curr_class.getParent();
+        AbstractSymbol parent = specifiedClass.getParent();
         if (parent == null || parent.equals(TreeConstants.No_class)) {
             return null;
         } else {
-            toReturn(parent, curr_class, methodName, argTypes);
+            //System.out.println(parent);
+            return toReturn(parent, curr_class, methodName, argTypes);
         }
-	return null;
     }
 
 
