@@ -262,14 +262,7 @@ class ClassTable {
 		    child_nodes.add(curr_class);
         	    parentChildTable.put(parent, child_nodes);
         	}        		
-            }else {
-                //Not an error but needs to be noted.
-		semantError().println("No Parent found.");	
             }
-
-		
-
-
             /*check curr_class types*/
             if (check_uninheritable(curr_class)) {
             	semantError(curr_class).println("Class " + curr_class.getName().toString()
@@ -406,7 +399,8 @@ class ClassTable {
 	//System.out.println(class_cTable.get(type1));	
         while (true) {
             AbstractSymbol parent = (class_cTable.get(type1)).getParent();
-            if (parent == null) {
+            //System.out.println("HEY"+parent);
+            if (parent == null || parent == TreeConstants.No_class) {
                 return false;
             } else if (parent.equals(type2)) {
                 return true;
