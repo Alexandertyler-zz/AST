@@ -720,6 +720,9 @@ class assign extends Expression {
         } else {
             setType = TreeConstants.Object_;
         }
+        if(!cTable.typeCheck(expr.get_type(), setType, curr_class)) {
+                cTable.semantError().println("Expression type: " + expr.get_type() + " does not match variable type: " + setType);
+            }
         //assert expr.get_type is setType
 
         this.set_type(expr.get_type());

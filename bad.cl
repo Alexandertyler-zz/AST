@@ -2,19 +2,46 @@
 
 class Broken {
       x : String;
+      y : Int;
+      z : Bool;
+
+
       brokenDispatch(a : Int, b : Int) : Int {
                        a <- (a + b)
                        };
+
+
       callingThingsWrong() : Int {
       {
 -- mismatched argument numbers
                        brokenDispatch(0, 0, 0);
 -- mismatched types
                        brokenDispatch(0, "hah");
--- different return type
-                       x <- (brokenDispatch(0,0));
+-- assignment type mismatch
+                       x <- (brokenDispatch(0,5));
       } 
       };
+
+      buggyComparisons() : Int {
+      {
+                x <- "derp";
+                y <- 0;
+                z <- false;
+--eq type must match for ints, bools, strings    
+                z <- (x = y);
+--arithmetic comparisons must be ints
+                z <- (x < y);
+                z <- (x <= y);
+--arithmetic can only be done on ints
+                y <- y/x;
+                y <- y*x;
+                y <- y+x;
+                y <- y-x;
+
+                y;
+     }
+     };
+        
 };                     
 
 class C {
