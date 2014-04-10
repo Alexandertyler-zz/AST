@@ -283,7 +283,7 @@ class ClassTable {
 	}	
 	
 	if (!class_cTable.containsKey(TreeConstants.Main)) {
-	    semantError().println("No main class found.");
+	    semantError(curr_class).println("No main class found.");
 	}	
 	
 
@@ -302,7 +302,7 @@ class ClassTable {
 	    curr_class.resetVisit();
 	} else {
 	    if (curr_class.checkVisit()) {
-		semantError().println("Detected cyclic inheritance tree at class " + curr_class.getName().getString());
+		semantError(curr_class).println("Detected cyclic inheritance tree at class " + curr_class.getName().getString());
 	    } else {
 	            if (parentChildTable.containsKey(curr_class.getName())) {
 			for (class_c child : parentChildTable.get(curr_class.getName())) {
@@ -329,7 +329,7 @@ class ClassTable {
     public Formals formalLookup(AbstractSymbol className, AbstractSymbol myMethod) {
         class_c curr_class = class_cTable.get(className);
         if (curr_class == null) {
-            semantError().println("Class passed into formalLookup is not defined.");
+            semantError(curr_class).println("Class passed into formalLookup is not defined.");
             return null;
         }
         Features features = curr_class.features;
@@ -354,7 +354,7 @@ class ClassTable {
     public AbstractSymbol attrLookup(AbstractSymbol className, AbstractSymbol attribute) {
 	    class_c curr_class = class_cTable.get(className);
         if (curr_class == null) {
-            semantError().println("Class " + className.toString() + " passed into attrLookup is not defined.");
+            semantError(curr_class).println("Class " + className.toString() + " passed into attrLookup is not defined.");
 	    return null;
         }
 
@@ -464,7 +464,7 @@ class ClassTable {
 	
         class_c specifiedClass = class_cTable.get(specifiedClassName);
         if (specifiedClass == null) {
-            semantError().println("Specified class in toReturn is not in class_cTable.");
+            semantError(curr_class).println("Specified class in toReturn is not in class_cTable.");
 	}
 	for (Enumeration e = (specifiedClass.features).getElements(); e.hasMoreElements(); ) {
 	    Feature curr_feat = (Feature) e.nextElement();
@@ -472,14 +472,14 @@ class ClassTable {
 		method curr_method = (method) curr_feat;
 		if (curr_method.name.equals(methodName)) {
 		    if (!(argTypes.size() == curr_method.formals.getLength())) {
-		        semantError().println("Dispatch arg length doesn't match definition arg length.");
+		        semantError(curr_class).println("Dispatch arg length doesn't match definition arg length.");
 			return curr_method.return_type;
 		    }
 		    int iter = 0;
 		    for (Enumeration f = (curr_method.formals).getElements(); f.hasMoreElements(); ) {
 			formalc curr_formal = (formalc) f.nextElement();
 			if (!typeCheck(argTypes.get(iter), curr_formal.type_decl, curr_class)) {
-			    semantError().println("Dispatch types don't match.");
+			    semantError(curr_class).println("Dispatch types don't match.");
 			    break;
 			}
 			iter++;
