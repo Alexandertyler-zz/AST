@@ -465,7 +465,7 @@ class method extends Feature {
 			", Formals length "+formals.getLength()+".");
             }
         }
-        
+        AbstractSymbol parentReturnType = cTable.toReturn( 
         sTable.enterScope();
         for (Enumeration e = formals.getElements(); e.hasMoreElements(); ) {
             Formal currFormal = (Formal) e.nextElement();
@@ -486,7 +486,8 @@ class method extends Feature {
 	//System.out.println(returnType);
 	if (!cTable.typeCheck(expr.get_type(), returnType, curr_class)) { //assert expr.get_type == returnType
                 //System.out.println("Expression is " + expr.get_type() + " and return type is " + returnType);
-		cTable.semantError(curr_class.getFilename, this).println("Method return type is not equal to expression return type.");
+		cTable.semantError(curr_class.getFilename, this).println("Method return type "+expr.get_type()+
+			" is not equal to expression return type "+returnType+".");
         }
         sTable.exitScope();
 
@@ -544,7 +545,7 @@ class attr extends Feature {
 	if (!(parentName.equals(TreeConstants.No_class))) {
             AbstractSymbol parentAttr = cTable.attrLookup(curr_class.getParent(), name);
             if (parentAttr != null) {
-                cTable.semantError(curr_class.getFilename(), this).println("Redefining parent attribute.");
+                cTable.semantError(curr_class.getFilename(), this).println("Redefining parent attribute "+parentAttr+".");
             }
 	}
 	//System.out.println("Outside");
@@ -557,7 +558,7 @@ class attr extends Feature {
             cTable.semantError(curr_class.getFilename(), this).println("Attribute has name self.");
         }
         if ((!cTable.typeCheck(init.get_type(), type_decl, curr_class)) &&  (!init.get_type().equals(TreeConstants.No_type))) {
-            cTable.semantError(curr_class.getFilename(), this).println("Expr does not conform to declared type.");
+            cTable.semantError(curr_class.getFilename(), this).println("Expr does not conform to declared type "+type_decl+" in attr.");
         }
         sTable.exitScope();
 
@@ -606,10 +607,10 @@ class formalc extends Formal {
         }
         AbstractSymbol sType = (AbstractSymbol) sTable.probe(name);
         if (sType != null) {
-            cTable.semantError(curr_class.getFilename(), this).println("Name is in current scope of symbol table.");
+            cTable.semantError(curr_class.getFilename(), this).println("Name "+sType+" of formalc is in current scope of symbol table.");
         }
         if (type_decl.equals(TreeConstants.SELF_TYPE)) {
-            cTable.semantError(curr_class.getFilename(), this).println("Type is of type SELF_TYPE.");
+            cTable.semantError(curr_class.getFilename(), this).println("Type is of type SELF_TYPE in formalc.");
         }
 
         sTable.addId(name, type_decl);
@@ -711,7 +712,7 @@ class assign extends Expression {
         AbstractSymbol symType = (AbstractSymbol) sTable.lookup(name);
         AbstractSymbol classType = (AbstractSymbol) cTable.attrLookup(curr_class.getName(), name);
         if (symType == null && classType == null) {
-            cTable.semantError(curr_class.getFilename(), this).println("Can't find symbol in assign.");
+            cTable.semantError(curr_class.getFilename(), this).println("Can't find symbol "+name+" in assign.");
         }
         AbstractSymbol setType = null;
         if (symType != null) {
@@ -798,7 +799,7 @@ class static_dispatch extends Expression {
         //must match
         AbstractSymbol returnType = cTable.toReturn(type_name, curr_class, name, argTypes);
 	if (returnType == null) {
-	    cTable.semantError(curr_class.getFilename(), this).println("Can't find method in class in static dispatch.");
+	    cTable.semantError(curr_class.getFilename(), this).println("Can't find method "+name+" in class in static dispatch.");
 	    returnType = TreeConstants.Object_;
 	}
         //if the method name has self_type as a return type, 
@@ -868,7 +869,7 @@ class dispatch extends Expression {
         //must match
         AbstractSymbol returnType = cTable.toReturn(expr.get_type(), curr_class, name, argTypes);
 	if (returnType == null) {
-	    cTable.semantError(curr_class.getFilename(), this).println("Can't find method in class in dispatch.");
+	    cTable.semantError(curr_class.getFilename(), this).println("Can't find method "+name+" in class in dispatch.");
 	    returnType = TreeConstants.Object_;
 	}
         //if the method name has self_type as a return type, 
@@ -925,7 +926,7 @@ class cond extends Expression {
     public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
         pred.semantCheck(sTable, cTable, curr_class);
         if (!cTable.typeCheck(pred.get_type(), TreeConstants.Bool, curr_class)) {  //assert pred is a bool
-            cTable.semantError(curr_class.getFilename(), this).println("Predicate in Conditional is not a bool.");
+            cTable.semantError(curr_class.getFilename(), this).println("Predicate in Conditional is not a bool but type "+pred.get_type()+".");
         }
         then_exp.semantCheck(sTable, cTable, curr_class);
         else_exp.semantCheck(sTable, cTable, curr_class);
@@ -973,7 +974,7 @@ class loop extends Expression {
     public void semantCheck(SymbolTable sTable, ClassTable cTable, class_c curr_class) {
         pred.semantCheck(sTable, cTable, curr_class);       
         if (!cTable.typeCheck(pred.get_type(), TreeConstants.Bool, curr_class)) {  //assert pred is a bool
-            cTable.semantError(curr_class.getFilename(), this).println("Predicate in Conditional is not a bool.");
+            cTable.semantError(curr_class.getFilename(), this).println("Predicate in Conditional is not a bool but type "+pred.get_type()+".");
         }
         body.semantCheck(sTable, cTable, curr_class);
         this.set_type(TreeConstants.Object_);
@@ -1165,7 +1166,7 @@ class let extends Expression {
         //checks if init exists, then make sure its type conforms with declared type, "type"
         if (!init.get_type().equals(TreeConstants.No_type)) {
             if (!cTable.typeCheck(init.get_type(), type_decl, curr_class)) {  //assert with init with "type"
-                cTable.semantError(curr_class.getFilename(), this).println("Type declaration in let does not match init type.");
+                cTable.semantError(curr_class.getFilename(), this).println("Type declaration "+type_decl+" in let does not match init type "+init.get_type()".");
             }
         }
         
@@ -1218,7 +1219,7 @@ class plus extends Expression {
         //assert int
         if (!(cTable.typeCheck(e1.get_type(), TreeConstants.Int, curr_class)) || 
                     !(cTable.typeCheck(e2.get_type(), TreeConstants.Int, curr_class))) {
-            cTable.semantError(curr_class.getFilename(), this).println("E1 or E2 is not of type int in plus.");
+            cTable.semantError(curr_class.getFilename(), this).println("E1 "+e1.get_type()+" or E2 "+e2.get_type()+" is not of type int in plus.");
         }
         this.set_type(TreeConstants.Int);
     }
