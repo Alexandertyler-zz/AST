@@ -457,11 +457,12 @@ class method extends Feature {
                     formalc currFormal = (formalc) formals.getNth(iter);
                     iter++;
                     if (!(parentFormal.type_decl.equals(currFormal.type_decl))) {
-                        cTable.semantError().println("Formal does not have the same type as parent formal.");
+                        cTable.semantError(curr_class.getFilename(), this).println("Formal "+currFormal.type_decl+" does not have the same type as parent formal "+parentFormal.type_decl+".");
                     }
                 }
             } else {
-                cTable.semantError().println("Formals differ in length when overriding parent.");
+                cTable.semantError(curr_class.getFilename(), this).println("Error when overriding parent formals. Parents length: "+parentFormals.getLength()+
+			", Formals length "+formals.getLength()+".");
             }
         }
         
@@ -473,7 +474,7 @@ class method extends Feature {
 
         AbstractSymbol returnType = return_type;
         if(!returnType.equals(TreeConstants.SELF_TYPE) && !(cTable.class_cTable.containsKey(returnType))) {
-            cTable.semantError().println("Method return type is not found.");
+            cTable.semantError(this).println("Method "+name+" return type is not found.");
         }
 
         if (returnType.equals(TreeConstants.SELF_TYPE)) {
@@ -484,8 +485,8 @@ class method extends Feature {
         //System.out.println("Expression type is " + expr.get_type());
 	//System.out.println(returnType);
 	if (!cTable.typeCheck(expr.get_type(), returnType, curr_class)) { //assert expr.get_type == returnType
-                System.out.println("Expression is " + expr.get_type() + " and return type is " + returnType);
-		cTable.semantError().println("Method return type is not equal to expression return type.");
+                //System.out.println("Expression is " + expr.get_type() + " and return type is " + returnType);
+		cTable.semantError(this).println("Method return type is not equal to expression return type.");
         }
         sTable.exitScope();
 
@@ -1365,7 +1366,7 @@ class divide extends Expression {
 	    //assert Int
         if (!(cTable.typeCheck(e1.get_type(), TreeConstants.Int, curr_class)) || 
                     !(cTable.typeCheck(e2.get_type(), TreeConstants.Int, curr_class))) {
-            cTable.semantError().println("E1 or E2 is not of type int in divide.");
+            cTable.semantError(curr_class.getFilename(), this).println("E1 or E2 is not of type int in divide.");
         }
         this.set_type(TreeConstants.Int);
     }
