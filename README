@@ -1,181 +1,49 @@
-README file for Programming Assignment 4 (Java edition)
-======================================================
-
-Your directory should now contain the following files:
-
- ASTConstants.java    -> [class dir]/src/PA4J/ASTConstants.java
- ASTLexer.java	      -> [class dir]/src/PA4J/ASTLexer.java
- ASTParser.java	      -> [class dir]/src/PA4J/ASTParser.java
- AbstractSymbol.java  -> [class dir]/src/PA4J/AbstractSymbol.java
- AbstractTable.java   -> [class dir]/src/PA4J/AbstractTable.java
- BoolConst.java       -> [course dir]/src/PA3J/BoolConst.java
- ClassTable.java
- Flags.java	      -> [class dir]/src/PA4J/Flags.java
- IdSymbol.java	      -> [class dir]/src/PA4J/IdSymbol.java
- IdTable.java	      -> [class dir]/src/PA4J/IdTable.java
- IntSymbol.java	      -> [class dir]/src/PA4J/IntSymbol.java
- IntTable.java	      -> [class dir]/src/PA4J/IntTable.java
- ListNode.java	      -> [class dir]/src/PA4J/ListNode.java
- Makefile	      -> [class dir]/etc/../assignments/PA4J/Makefile
- README
- Semant.java	      -> [class dir]/src/PA4J/Semant.java
- StringSymbol.java    -> [class dir]/src/PA4J/StringSymbol.java
- StringTable.java     -> [class dir]/src/PA4J/StringTable.java
- SymbolTable.java     -> [class dir]/src/PA4J/SymbolTable.java
- SymtabExample.java   -> [class dir]/src/PA4J/SymtabExample.java
- TokenConstants.java  -> [class dir]/src/PA4J/TokenConstants.java
- TreeConstants.java
- TreeNode.java	      -> [class dir]/src/PA4J/TreeNode.java
- Utilities.java	      -> [class dir]/src/PA4J/Utilities.java
- bad.cl
- checkpoint
- cool-tree.aps	      -> [class dir]/src/PA4J/cool-tree.aps
- cool-tree.java
- compare-semant
- good.cl
-
-	The build.xml contains targets for compiling and running your
-	program. DO NOT MODIFY.
-
-	The README contains this info. Part of the assignment is to fill
-	the README with the write-up for your project. You should
-	explain design decisions, explain why your code is correct, and
-	why your test cases are adequate. It is part of the assignment
-	to clearly and concisely explain things in text as well as to
-	comment your code.  EDIT AND SUBMIT.
-
-	good.cl and bad.cl test a few features of the semantic checker.
-	You should add tests to ensure that good.cl exercises as many
-	legal semantic combinations as possible and that bad.cl
-	exercises as many kinds of semantic errors as possible.
-        EDIT AND SUBMIT.
-
-	cool-tree.aps contains the definitions for the tree language
-	which you use to construct the abstract syntax tree (AST). This
-	file is provided for your reference.  DO NOT MODIFY.
-
-        TreeNode.java and ListNode.java contain definitions used by the
-        tree package. DO NOT MODIFY.  
-
-        cool-tree.java specifies and gives an implementation of Cool ASTs
-        (see the README for PA3 and the "Cool Tour").  In this
-        assignment, you will need to add functions to the AST classes to
-        store, fetch, and compute information about the AST.
-
-   	You should NOT remove any definitions that are already present
-   	in cool-tree.java.  These function and data members are required
-   	for the system to function properly.
-
-        You should add any fields and methods to the classes you need to
-        perform semantic analysis.  You will need to add, for example,
-        methods which traverse the expressions of the tree and implement
-        the type-checking rules.  The entry point to the semantic
-        analyzer is program.semant().  EDIT AND SUBMIT cool-tree.java.
-
-	ClassTable.java implements a placeholder class for a few useful
-	methods.  Feel free to extend it to implement some real data
-	strucutre.
-
-	TreeConstants.java defined some useful symbol constants.  You
-	may add some of your own, if you wish.
-
-	ASTLexer.java, ASTParser.java, and ASTConstants.java implement a
-	lexer and a parser for reading text representation of ASTs from
-	console in the format produced by the parser phase. DO NOT
-	MODIFY.
-
-        Semant.java contains a driver to test the analyzer.  The main
-        method reads an AST in text form from standard input, parses it,
-        and then produces a type-annotated AST on standard output.  The
-        script mycoolc can pass any of the standard flags to the
-        semantic analyzer as well; for this assignment, -s (semantic
-        analysis debug) may be useful as it sets a static variable
-        Flags.semant_debug to "true".  If you want your semantic checker
-        to print debug information when the option is set, write your
-        debug code in the following format:
-
-	      if (Flags.semant_debug)
-	      {
-		...
-	      }
-
-	semant_debug is provided as a convenience. You don't need to use
-	the debugging flags if you don't want to. DON'T MODIFY
-	Semant.java
-
-	SymbolTable.java contains a symbol table implementation. Read
-	the comments in the file and look at the example in
-	SymtabExample.java.  You are not required to use this code, but
-	you may find it useful. DO NOT MODIFY.
-
-Instructions
-------------
-
-	To compile the example use of the symbol table, type
-
-	% ant symtab-example
-
-	This creates a shell script to run the symbol table example.
-
-	To compile your semantic analyzer program type:
-
-	% ant semant
-
-	To test your semantic checker, type:
-
-	% ./mysemant foo.cl
-
-	mysemant is a version of mycoolc that omits code generation.
-	mysemant parses all the cool files given on the command line and
-	builds a single abstract syntax tree containing all class
-	definitions appearing in the input files. Your semantic checker
-	is then called on this abstract syntax tree.  If there are no
-	errors, the program produces a type-annotated abstract syntax
-	tree as output.
-
-        To run the reference semantics analysisr on a file 'fool.cl':
-
-        % ./ref-semant foo.cl
-
-        To easily compare your implementation and the reference :
-
-        % compare-semant foo.cl
-
-        To run your checker on the files good.cl and bad.cl type:
-
-	% ant test
-
-        To run ten examples in tests directory type:
-
-        % ant test-all
-
-	If you think your semantic checker is correct and behaves like
-	the one we wrote, you can try to run mycoolc using your checker,
-	your parser and also your lexical analyzer if you choose (see
-	below for instructions).  Remember if your lexer, parser or
-	checker behaves in an unexpected manner, you may get errors
-	anywhere.
-
-	To turn in your work type:
-        
-        % ant submit-clean
-        % submit PA4
-        
-	Be sure to submit the files cool-tree.java,
-	ClassTable.java, TreeConstants.java, good.cl, bad.cl,
-	good.output, bad.output, and README. Don't forget to edit the
-	README file to include your write-up, and to write your own test
-	cases in good.cl and bad.cl.
-
- 	You may turn in the assignment as many times as you like.
- 	However, only the last version will be retained for grading.
-
-	GOOD LUCK!
-
----8<------8<------8<------8<---cut here---8<------8<------8<------8<---
-
 Write-up for PA4
 ----------------
+For this project my partner and I needed to implement type checking
+for the cool programming language. We started this by reading through the
+skeleton files provided to get an overview of what was missing. From that we
+started off at the entry point provided and proceeded to break the project into
+two components. The first was to check for cyclic inheritance and class type checking.
 
+The initial round of checks was done when we build a new ClassTable. In the constructor
+for the class we do a series of calls that begin with installbasicclasses. This puts the
+predefined classes, Object, int, string, bool, and IO, into our working classtable. Then
+we walk through each class that is passed in and add it to the table. At the same time we
+build a parentTable that houses a list of each parents children for use when checking cycles.
+Once that is done we check the classes for the uninheritable types defined in the cool manual.
+If that passes, we begin our check for cycles. The way that we do this is we walk through each
+class and mark the entry point as visited. We then walk through all of its children and check
+if we hit the visited node again. We do this for every single class in the table. Although this
+causes repeated checks on certain families, it is the only way to be thorough. If this comes
+back without any errors the graph is acyclic and inheritance checks are ok. Then we move onto
+the type checking aspect.
 
+To typecheck the tree, we first define a symbol table that houses all of the ID's and performs 
+scoping and keeps track of the value of variables within the current scope. Then we walk through
+all of the classes again and this time call our type checking function, semantCheck that we wrote.
+semantCheck takes in a symbol table, the class table we defined earlier, and our current class for
+name lookup. From this point, our semantCheck dives into the different levels of defintion walking
+though first the features, then attributes and methods. The attributes and methods then break
+into all of the other items from constants to dispatches to expressions. Each method has its own 
+semantCheck that gets called and which in turn calls its sub-members semantChecks. It is important
+to note that along the way, we are dynamically setting the self.set_type() of each class. This is 
+so that when the AST calls dump with types, the specific type is printed out along with the name.
+If there is ever a problem with a semantic check, we call classTable.semantError and print out 
+an error message that is tailored for the issue. We continue checking though and only break after
+the entire set of classes is type checked. We decided to write our semantCheck functions as return
+type void because it was easier for us to just set the type within the function itself instead of
+setting it after the call. This allowed for easier calls to deep levels of expressions without having
+to keep track of the return type across calls.
+
+Some key functions that we wrote included formalLookup and attrLookup that are defined in classtable.
+These functions are used to get specific formals and attributes so as to keep the level of complexity 
+in our semantCheck functions down. Another important function was typeCheck. This function is used
+to ensure that the type of arguement 2 conforms to the type of arguement 1. This is done by doing a 
+recursive call on the function that steps up through type 1's parents until it either finds a match
+or errors out. LeastUpperBound is a function that finds the closest relative to both types passed in.
+This is performed by putting the types and their parents into a list and then walking from the top
+down in each list until the types do not match. Then the last type checked is the LUB. FInally we have
+a function called toReturn that checks to ensure that the parameters in the method call and
+definition type match, then it returns the return type of the defined method in the specified class.
 
